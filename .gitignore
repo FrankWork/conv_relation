@@ -3,4 +3,5 @@ data/
 saved_models/
 nohup.out
 push/
-
+__pycache__/
+*.so
