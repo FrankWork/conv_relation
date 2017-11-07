@@ -155,18 +155,10 @@ def batch_read():
               tf.FixedLenSequenceFeature([], dtype=tf.int64),
       })
 
-    # feature = tf.cast(sequence[SequenceWrapper.F_TOKEN_ID], tf.int64)
-    # label = tf.cast(sequence[SequenceWrapper.F_LABEL], tf.int64)
+    feature = tf.cast(sequence[SequenceWrapper.F_TOKEN_ID], tf.int64)
+    label = tf.cast(sequence[SequenceWrapper.F_LABEL], tf.int64)
 
-    # f_batch, l_batch = tf.train.batch([feature, label], 1)
-    batch = tf.contrib.training.batch_sequences_with_states(
-      input_key=key,
-      input_sequences=sequence,
-      input_context=ctx,
-      input_length=tf.shape(sequence['token_id'])[0],
-      initial_states=initial_states,
-      num_unroll=3,
-      batch_size=batch_size)
+    f_batch, l_batch = tf.train.batch([feature, label], 1)
 
     init_op = tf.group(tf.global_variables_initializer(),
                           tf.local_variables_initializer())
@@ -184,5 +176,5 @@ def batch_read():
         print('Done training')
 
 write()
-# read()
-batch_read()
+read()
+# batch_read()
