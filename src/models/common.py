@@ -1,0 +1,130 @@
+import tensorflow as tf
+
+def linear_layer(name, x, in_size, out_size, is_regularize=False):
+  with tf.variable_scope(name):
+    loss_l2 = tf.constant(0)
+    w = tf.get_variable('linear_W', [in_size, out_size], 
+                      initializer=tf.truncated_normal_initializer(stddev=0.1))
+    b = tf.get_variable('linear_b', [out_size], 
+                      initializer=tf.constant_initializer(0.1))
+    o = tf.nn.xw_plus_b(x, w, b) # batch_size, out_size
+    if is_regularize:
+      loss_l2 += tf.nn.l2_loss(w) + tf.nn.l2_loss(b)
+    return o, loss_l2
+
+def conv2d(name, input, filter_size, num_filters):
+  input_dim = input.shape.as_list()[2]
+  with tf.variable_scope(name):
+    conv_weight = tf.get_variable('kernel', 
+                          [filter_size, input_dim, 1, num_filters], 
+                          initializer=tf.truncated_normal_initializer(stddev=0.1))
+    conv = tf.nn.conv2d(input,
+                        conv_weight,
+                        strides=[1, 1, input_dim, 1],
+                        padding='SAME')
+  return conv
+
+def cnn_forward(name, sent_pos, lexical, max_len, num_filters):
+  with tf.variable_scope(name):
+    input = tf.expand_dims(sent_pos, axis=-1)
+    input_dim = input.shape.as_list()[2]
+
+    # convolutional layer
+    pool_outputs = []
+    for filter_size in [3, 4, 5]:
+      with tf.variable_scope('conv-%s' % filter_size):
+        conv_weight = tf.get_variable('W1', 
+                              [filter_size, input_dim, 1, num_filters], 
+                              initializer=tf.truncated_normal_initializer(stddev=0.1))
+        conv_bias = tf.get_variable('b1', [num_filters], 
+                              initializer=tf.constant_initializer(0.1))
+        conv = tf.nn.conv2d(input,
+                            conv_weight,
+                            strides=[1, 1, input_dim, 1],
+                            padding='SAME')
+        # Batch normalization here
+        conv = tf.nn.relu(conv + conv_bias) # batch_size, max_len, 1, num_filters
+        pool = tf.nn.max_pool(conv, ksize= [1, max_len, 1, 1], 
+                              strides=[1, max_len, 1, 1], padding='SAME') # batch_size, 1, 1, num_filters
+        pool_outputs.append(pool)
+    pools = tf.reshape(tf.concat(pool_outputs, 3), [-1, 3*num_filters])
+
+    # feature 
+    feature = tf.concat([lexical, pools], axis=1)
+    return feature
+
+def wide_cnn_forward(sent_pos, lexical, max_len, num_filters, 
+                                        is_train, filter_sizes=[1, 2, 3, 4, 5]):
+  input = tf.expand_dims(sent_pos, axis=-1)
+  # convolutional layer
+  pool_outputs = []
+  for filter_size in filter_sizes:
+    with tf.variable_scope('conv-%s' % filter_size):
+      conv1 = conv2d('conv1', input, filter_size, num_filters)
+      conv1 = tf.contrib.layers.batch_norm(conv1, is_training=is_train)
+      bias1 = tf.get_variable('bias1', [num_filters], 
+                        initializer=tf.constant_initializer(0.1))
+      relu1 = tf.nn.relu(conv1 + bias1) # batch_size, max_len, 1, num_filters
+      relu1 = tf.reshape(relu1, [-1, max_len, num_filters])
+      relu1 = tf.expand_dims(relu1, axis=-1)
+
+      conv2 = conv2d('conv2', relu1, filter_size, num_filters)
+      conv2 = tf.contrib.layers.batch_norm(conv2, is_training=is_train)
+      bias2 = tf.get_variable('bias2', [num_filters], 
+                        initializer=tf.constant_initializer(0.1))
+      relu2 = tf.nn.relu(conv2 + bias2) # batch_size, max_len, 1, num_filters
+
+      pool = tf.nn.max_pool(relu2, ksize= [1, max_len, 1, 1], 
+                            strides=[1, max_len, 1, 1], padding='SAME') # batch_size, 1, 1, num_filters
+      pool_outputs.append(pool)
+  pools = tf.reshape(tf.concat(pool_outputs, 3), [-1, len(filter_sizes)*num_filters])
+
+  # feature 
+  feature = tf.concat([lexical, pools], axis=1)
+  return feature
+
+def rnn_forward_raw(input, rnn_size, rnn_layers, is_train, keep_prob):
+  def single_cell():
+    cell = tf.contrib.rnn.BasicLSTMCell(rnn_size, reuse=tf.get_variable_scope().reuse)
+    if is_train and keep_prob < 1:
+      cell = tf.contrib.rnn.DropoutWrapper(cell, output_keep_prob=keep_prob)
+    return cell
+
+  def rnn_cells():
+    cells = [single_cell() for _ in range(rnn_layers)]
+    cells = tf.contrib.rnn.MultiRNNCell(cells)
+    return cells
+  
+  fw_cell = rnn_cells()
+  bw_cell = rnn_cells()
+
+  # FIXME: peephole connections
+  outputs, _ = tf.nn.bidirectional_dynamic_rnn(fw_cell, bw_cell, input, 
+                                                    dtype=tf.float32)
+  return outputs
+
+def rnn_forward(input, max_len, rnn_size, rnn_layers, is_train, keep_prob):
+  '''
+  rnn with attention
+  '''
+  outputs = rnn_forward_raw(input, rnn_size, rnn_layers, is_train, keep_prob)
+
+  outputs = tf.add(outputs[0], outputs[1])# batch, len, rnn_size
+  # outputs = tf.concat([outputs[0], outputs[1]], axis=2) # batch, len, 2*rnn_size
+
+  # attention layer
+  hidden_size = max_len * rnn_size
+  w = tf.get_variable('attention_W', [hidden_size, max_len], 
+                        initializer=tf.contrib.layers.xavier_initializer())
+
+  M = tf.reshape(outputs, [-1, hidden_size]) # batch, hsize
+  M = tf.nn.relu(M) # batch,hsize
+  alpha = tf.matmul(M, w) # batch,hsize hsize,len => batch,len
+  alpha = tf.nn.softmax(alpha)# batch, len
+  alpha = tf.expand_dims(alpha, axis=1) # batch,1,len
+  feature = tf.matmul(alpha, outputs) # batch,1,len batch,len,rnn_size  => batch,1,rnn_size
+  
+  # feature 
+  feature = tf.reshape(feature, [-1, rnn_size])
+  feature = tf.nn.relu(feature)
+  return feature

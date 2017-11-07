@@ -1,0 +1,6 @@
+data/
+.vscode/
+saved_models/
+nohup.out
+push/
+
