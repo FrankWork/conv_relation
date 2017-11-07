@@ -5,3 +5,4 @@ nohup.out
 push/
 __pycache__/
 *.so
+*.tfrecords

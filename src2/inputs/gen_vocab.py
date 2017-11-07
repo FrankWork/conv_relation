@@ -13,9 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Generates vocabulary and term frequency files for datasets."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+
 
 import os
 import re
@@ -41,17 +39,14 @@ flags.DEFINE_integer('vocab_count_threshold', 1, 'The minimum number of '
                      'a word or bigram should occur to keep '
                      'it in the vocabulary.')
 
-# TODO: reduce vocab size
-MAX_VOCAB_SIZE = None # 9006 + 1
-EOS_TOKEN = '</s>'
-
 Example = namedtuple('Example', 'label entity1 entity2 sentence')
 PositionPair = namedtuple('PosPair', 'first last')
 
-def dataset(data_path):
+def dataset(data_file):
   '''load dataset from text file
   '''
   data = []
+  data_path = os.path.join(FLAGS.data_dir, data_file)
   with open(data_path) as f:
     for line in f:
       tokens = line.strip().lower().split() # space seperated
@@ -71,13 +66,13 @@ def dataset(data_path):
   return data
 
 
-def gen_vocab(train_path, vocab_path, vocab_freq_path):
+def gen_vocab(train_file):
   tf.logging.set_verbosity(tf.logging.INFO)
 
   vocab_freqs = defaultdict(int)
 
   # Fill vocabulary frequencies map 
-  for example in dataset(train_path):
+  for example in dataset(train_file):
     for token in example.sentence:
       vocab_freqs[token] += 1
 
@@ -98,12 +93,12 @@ def gen_vocab(train_path, vocab_path, vocab_freq_path):
 
   # Write
   # tf.gfile.MakeDirs(FLAGS.output_dir)
+  vocab_path = os.path.join(FLAGS.data_dir, FLAGS.vocab_file)
+  vocab_freq_path = os.path.join(FLAGS.data_dir, FLAGS.vocab_freq_file)
+  
   with open(vocab_path, 'w') as vocab_f:
     with open(vocab_freq_path, 'w') as freq_f:
       for word, freq in ordered_vocab_freqs:
         vocab_f.write('{}\n'.format(word))
         freq_f.write('{}\n'.format(freq))
 
-
-if __name__ == '__main__':
-  tf.app.run()

@@ -13,10 +13,7 @@ tf.app.flags.DEFINE_string("mode", "gen_data", "generate vocab")
 
 def main(_):
   if FLAGS.mode=='gen_vocab':
-    inputs.gen_vocab(os.path.join(FLAGS.data_dir, FLAGS.train_file),
-                    os.path.join(FLAGS.data_dir, FLAGS.vocab_file),
-                    os.path.join(FLAGS.data_dir, FLAGS.vocab_freq_file),
-    )
+    inputs.gen_vocab(FLAGS.train_file)
   elif FLAGS.mode=='gen_data':
     inputs.gen_data()
 

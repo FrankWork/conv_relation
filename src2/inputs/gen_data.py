@@ -15,17 +15,14 @@
 """Create TFRecord files of SequenceExample protos from dataset.
 
 Constructs 3 datasets:
-  1. Labeled data for the LSTM classification model, optionally with label gain.
-     "*_classification.tfrecords" (for both unidirectional and bidirectional
+  1. Labeled data for the LSTM classification model.
+     "*_cl.tfrecords" (for both unidirectional and bidirectional
      models).
   2. Data for the unsupervised LM-LSTM model that predicts the next token.
      "*_lm.tfrecords" (generates forward and reverse data).
   3. Data for the unsupervised SA-LSTM model that uses Seq2Seq.
      "*_sa.tfrecords".
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import os
 import string
@@ -34,34 +31,37 @@ import string
 
 import tensorflow as tf
 
-from adversarial_text.data import data_utils
-from adversarial_text.data import document_generators
+# from adversarial_text.data import data_utils
+# from adversarial_text.data import document_generators
 
-data = data_utils
+# data = data_utils
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
 # Flags for input data are in document_generators.py
-flags.DEFINE_string('vocab_file', '', 'Path to the vocabulary file. Defaults '
-                    'to FLAGS.output_dir/vocab.txt.')
-flags.DEFINE_string('output_dir', '', 'Path to save tfrecords.')
+# flags.DEFINE_string('vocab_file', '', 'Path to the vocabulary file. Defaults '
+#                     'to FLAGS.output_dir/vocab.txt.')
+# flags.DEFINE_string('output_dir', '', 'Path to save tfrecords.')
 
-# Config
-flags.DEFINE_boolean('label_gain', False,
-                     'Enable linear label gain. If True, sentiment label will '
-                     'be included at each timestep with linear weight '
-                     'increase.')
-
-
-def build_shuffling_tf_record_writer(fname):
-  return data.ShufflingTFRecordWriter(os.path.join(FLAGS.output_dir, fname))
+# # Config
+# flags.DEFINE_boolean('label_gain', False,
+#                      'Enable linear label gain. If True, sentiment label will '
+#                      'be included at each timestep with linear weight '
+#                      'increase.')
 
 
-def build_tf_record_writer(fname):
-  return tf.python_io.TFRecordWriter(os.path.join(FLAGS.output_dir, fname))
+def _writer(fname):
+  '''wrapper of writer ot deal with relative path'''
+  path = os.path.join(FLAGS.data_dir, fname)
+  return tf.python_io.TFRecordWriter(path)
+
+def _shuff_writer(fname):
+  '''wrapper of writer ot deal with relative path'''
+  path = os.path.join(FLAGS.data_dir, fname)
+  return ShufflingTFRecordWriter(path)
 
 
-def build_input_sequence(doc, vocab_ids):
+def _build_input_sequence(doc, vocab_ids):
   """Builds input sequence from file.
 
   Splits lines on whitespace. Treats punctuation as whitespace. For word-level
@@ -89,27 +89,28 @@ def build_input_sequence(doc, vocab_ids):
   return seq
 
 
-def make_vocab_ids(vocab_filename):
-  if FLAGS.output_char:
-    ret = dict([(char, i) for i, char in enumerate(string.printable)])
-    ret[data.EOS_TOKEN] = len(string.printable)
-    return ret
-  else:
-    with open(vocab_filename) as vocab_f:
-      return dict([(line.strip(), i) for i, line in enumerate(vocab_f)])
-
-
-def generate_training_data(vocab_ids, writer_lm_all, writer_seq_ae_all):
+def _generate_training_data(vocab_ids, writer_lm_all, writer_seq_ae_all):
   """Generates training data."""
 
   # Construct training data writers
-  writer_lm = build_shuffling_tf_record_writer(data.TRAIN_LM)
-  writer_seq_ae = build_shuffling_tf_record_writer(data.TRAIN_SA)
-  writer_class = build_shuffling_tf_record_writer(data.TRAIN_CLASS)
-  writer_valid_class = build_tf_record_writer(data.VALID_CLASS)
-  writer_rev_lm = build_shuffling_tf_record_writer(data.TRAIN_REV_LM)
-  writer_bd_class = build_shuffling_tf_record_writer(data.TRAIN_BD_CLASS)
-  writer_bd_valid_class = build_shuffling_tf_record_writer(data.VALID_BD_CLASS)
+  
+
+  writer_lm = _shuff_writer(TRAIN_LM)
+  writer_seq_ae = _shuff_writer(TRAIN_SA)
+  writer_class = _shuff_writer(TRAIN_CLASS)
+  writer_valid_class = _writer(VALID_CLASS)
+  writer_rev_lm = _shuff_writer(TRAIN_REV_LM)
+  writer_bd_class = _shuff_writer(TRAIN_BD_CLASS)
+  writer_bd_valid_class = _shuff_writer(VALID_BD_CLASS)
+
+  for example in dataset(FLAGS.train_file):
+    input_seq = _build_input_sequence(example, vocab_ids)
+    for token in example.sentence:
+      pass
+
+  for example in dataset(FLAGS.test_file):
+    for token in example.sentence:
+      pass
 
   for doc in document_generators.documents(
       dataset='train', include_unlabeled=True, include_validation=True):
@@ -156,7 +157,7 @@ def generate_training_data(vocab_ids, writer_lm_all, writer_seq_ae_all):
   writer_bd_valid_class.close()
 
 
-def generate_test_data(vocab_ids, writer_lm_all, writer_seq_ae_all):
+def _generate_test_data(vocab_ids, writer_lm_all, writer_seq_ae_all):
   """Generates test data."""
   # Construct test data writers
   writer_lm = build_shuffling_tf_record_writer(data.TEST_LM)
@@ -197,21 +198,20 @@ def generate_test_data(vocab_ids, writer_lm_all, writer_seq_ae_all):
   writer_bd_class.close()
 
 
-def main(_):
+def gen_data():
   tf.logging.set_verbosity(tf.logging.INFO)
-  tf.logging.info('Assigning vocabulary ids...')
-  vocab_ids = make_vocab_ids(
-      FLAGS.vocab_file or os.path.join(FLAGS.output_dir, 'vocab.txt'))
+  # tf.logging.info('Assigning vocabulary ids...')
+  
+  vocab_path = os.path.join(FLAGS.data_dir, FLAGS.vocab_file)
 
-  with build_shuffling_tf_record_writer(data.ALL_LM) as writer_lm_all:
-    with build_shuffling_tf_record_writer(data.ALL_SA) as writer_seq_ae_all:
+  with open(vocab_path) as vocab_f:
+      vocab_ids =  dict([(line.strip(), i) for i, line in enumerate(vocab_f)])
 
+  with _shuff_writer(ALL_LM) as writer_lm_all:
+    with _shuff_writer(ALL_SA) as writer_seq_ae_all:
       tf.logging.info('Generating training data...')
-      generate_training_data(vocab_ids, writer_lm_all, writer_seq_ae_all)
+      _generate_training_data(vocab_ids, writer_lm_all, writer_seq_ae_all)
 
       tf.logging.info('Generating test data...')
-      generate_test_data(vocab_ids, writer_lm_all, writer_seq_ae_all)
+      _generate_test_data(vocab_ids, writer_lm_all, writer_seq_ae_all)
 
-
-if __name__ == '__main__':
-  tf.app.run()
