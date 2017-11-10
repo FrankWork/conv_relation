@@ -52,7 +52,7 @@ flags.DEFINE_string('pretrained_model_dir', None,
 flags.DEFINE_string('master', '', 'Master address.')
 flags.DEFINE_integer('task', 0, 'Task id of the replica running the training.')
 flags.DEFINE_integer('ps_tasks', 0, 'Number of parameter servers.')
-flags.DEFINE_string('train_dir', '/tmp/text_train',
+flags.DEFINE_string('train_dir', 'saved_models/advtext',
                     'Directory for logs and checkpoints.')
 flags.DEFINE_integer('max_steps', 1000000, 'Number of batches to run.')
 flags.DEFINE_boolean('log_device_placement', False,
