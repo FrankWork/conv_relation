@@ -30,7 +30,8 @@ import string
 # Dependency imports
 
 import tensorflow as tf
-
+from .global_names import *
+import .tfrecords as data
 # from adversarial_text.data import data_utils
 # from adversarial_text.data import document_generators
 
@@ -61,30 +62,30 @@ def _shuff_writer(fname):
   return ShufflingTFRecordWriter(path)
 
 
-def _build_input_sequence(doc, vocab_ids):
-  """Builds input sequence from file.
+def _build_input_sequence(raw_example, vocab_ids):
+  """Builds input sequence from raw_example.
 
-  Splits lines on whitespace. Treats punctuation as whitespace. For word-level
-  sequences, only keeps terms that are in the vocab.
+  PositionPair = namedtuple('PosPair', 'first last')
+  Raw_Example = namedtuple('Raw_Example', 'label entity1 entity2 sentence')
 
   Terms are added as token in the SequenceExample.  The EOS_TOKEN is also
   appended. Label and weight features are set to 0.
 
   Args:
-    doc: Document (defined in `document_generators`) from which to build the
-      sequence.
+    raw_example: Raw_Example
     vocab_ids: dict<term, id>.
 
   Returns:
     SequenceExampleWrapper.
   """
   seq = data.SequenceWrapper()
-  for token in document_generators.tokens(doc):
+  seq.add_context(raw_example)
+  for token in raw_example['sentence']:
     if token in vocab_ids:
       seq.add_timestep().set_token(vocab_ids[token])
 
   # Add EOS token to end
-  seq.add_timestep().set_token(vocab_ids[data.EOS_TOKEN])
+  seq.add_timestep().set_token(vocab_ids[EOS_TOKEN])
 
   return seq
 
@@ -93,24 +94,19 @@ def _generate_training_data(vocab_ids, writer_lm_all, writer_seq_ae_all):
   """Generates training data."""
 
   # Construct training data writers
-  
-
   writer_lm = _shuff_writer(TRAIN_LM)
   writer_seq_ae = _shuff_writer(TRAIN_SA)
   writer_class = _shuff_writer(TRAIN_CLASS)
-  writer_valid_class = _writer(VALID_CLASS)
   writer_rev_lm = _shuff_writer(TRAIN_REV_LM)
   writer_bd_class = _shuff_writer(TRAIN_BD_CLASS)
   writer_bd_valid_class = _shuff_writer(VALID_BD_CLASS)
 
-  for example in dataset(FLAGS.train_file):
+  for example in data.raw_dataset(FLAGS.train_file):
     input_seq = _build_input_sequence(example, vocab_ids)
-    for token in example.sentence:
-      pass
 
-  for example in dataset(FLAGS.test_file):
-    for token in example.sentence:
-      pass
+  # TODO
+
+  
 
   for doc in document_generators.documents(
       dataset='train', include_unlabeled=True, include_validation=True):
@@ -159,6 +155,10 @@ def _generate_training_data(vocab_ids, writer_lm_all, writer_seq_ae_all):
 
 def _generate_test_data(vocab_ids, writer_lm_all, writer_seq_ae_all):
   """Generates test data."""
+  for example in data.raw_dataset(FLAGS.test_file):
+    input_seq = _build_input_sequence(example, vocab_ids)
+
+
   # Construct test data writers
   writer_lm = build_shuffling_tf_record_writer(data.TEST_LM)
   writer_rev_lm = build_shuffling_tf_record_writer(data.TEST_REV_LM)

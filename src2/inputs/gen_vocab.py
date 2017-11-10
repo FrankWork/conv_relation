@@ -18,12 +18,13 @@
 import os
 import re
 from collections import defaultdict
-from collections import namedtuple
+
 
 # Dependency imports
 
 import tensorflow as tf
-
+from .global_names import MAX_VOCAB_SIZE, EOS_TOKEN
+from .tfrecords import raw_dataset
 # from adversarial_text.data import data_utils
 # from adversarial_text.data import document_generators
 
@@ -39,31 +40,12 @@ flags.DEFINE_integer('vocab_count_threshold', 1, 'The minimum number of '
                      'a word or bigram should occur to keep '
                      'it in the vocabulary.')
 
-Example = namedtuple('Example', 'label entity1 entity2 sentence')
-PositionPair = namedtuple('PosPair', 'first last')
 
-def dataset(data_file):
-  '''load dataset from text file
-  '''
-  data = []
-  data_path = os.path.join(FLAGS.data_dir, data_file)
-  with open(data_path) as f:
-    for line in f:
-      tokens = line.strip().lower().split() # space seperated
-      # tokens = line.strip().split() # space seperated
-      
-      label = int(tokens[0])
-      entity1 = PositionPair(int(tokens[1]), int(tokens[2]))
-      entity2 = PositionPair(int(tokens[3]), int(tokens[4]))
 
-      sentence = []
-      for w in tokens[5:]:
-        # TODO: replace digits with <digit/> token
-        w = re.sub(r"[0-9]", "0", w) # replace digits with 0s
-        sentence.append(w)
-      example = Example(label, entity1, entity2, sentence)
-      data.append(example)
-  return data
+def split_by_punct(segment):
+  """Splits str segment by punctuation, filters our empties and spaces."""
+  return [s for s in re.split(r'\W+', segment) if s and not s.isspace()]
+
 
 
 def gen_vocab(train_file):
@@ -72,7 +54,7 @@ def gen_vocab(train_file):
   vocab_freqs = defaultdict(int)
 
   # Fill vocabulary frequencies map 
-  for example in dataset(train_file):
+  for example in raw_dataset(train_file):
     for token in example.sentence:
       vocab_freqs[token] += 1
 
