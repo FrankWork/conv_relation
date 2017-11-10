@@ -14,7 +14,7 @@
 # ==============================================================================
 """Generates vocabulary and term frequency files for datasets."""
 
-
+import csv
 import os
 import re
 from collections import defaultdict
@@ -23,10 +23,14 @@ from collections import defaultdict
 # Dependency imports
 
 import tensorflow as tf
-from .global_names import MAX_VOCAB_SIZE, EOS_TOKEN
-from .tfrecords import raw_dataset
+from inputs.tfrecords import raw_dataset
 # from adversarial_text.data import data_utils
 # from adversarial_text.data import document_generators
+
+# TODO: reduce vocab size
+MAX_VOCAB_SIZE = None # 9006 + 1
+EOS_TOKEN = '</s>'
+
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -40,13 +44,18 @@ flags.DEFINE_integer('vocab_count_threshold', 1, 'The minimum number of '
                      'a word or bigram should occur to keep '
                      'it in the vocabulary.')
 
+# flags.DEFINE_integer('vocab_size', None,
+#                      'The size of the vocaburary. This value '
+#                      'should be exactly same as the number of the '
+#                      'vocabulary used in dataset. Because the last '
+#                      'indexed vocabulary of the dataset preprocessed by '
+#                      'my preprocessed code, is always <eos> and here we '
+#                      'specify the <eos> with the the index.')
 
 
 def split_by_punct(segment):
   """Splits str segment by punctuation, filters our empties and spaces."""
   return [s for s in re.split(r'\W+', segment) if s and not s.isspace()]
-
-
 
 def gen_vocab(train_file):
   tf.logging.set_verbosity(tf.logging.INFO)
@@ -84,3 +93,34 @@ def gen_vocab(train_file):
         vocab_f.write('{}\n'.format(word))
         freq_f.write('{}\n'.format(freq))
 
+def get_vocab_freqs():
+  """Returns vocab frequencies.
+
+  Returns:
+    List of integers
+  """
+  path = os.path.join(FLAGS.data_dir, FLAGS.vocab_freq_file)
+
+  with open(vocab_path) as freq_f:
+      freqs =  [int(line.strip()) for line in freq_f]
+  
+  FLAGS.vocab_size = len(freqs)
+  return freqs
+
+def get_vocab():
+  '''Return list of string
+  '''
+  vocab_path = os.path.join(FLAGS.data_dir, FLAGS.vocab_file)
+
+  with open(vocab_path) as vocab_f:
+      vocab =  [line.strip() for line in vocab_f]
+  return vocab
+
+def get_vocab_ids():
+  '''return dict<string, int>
+  '''
+  vocab_path = os.path.join(FLAGS.data_dir, FLAGS.vocab_file)
+
+  with open(vocab_path) as vocab_f:
+      vocab_ids =  dict([(line.strip(), i) for i, line in enumerate(vocab_f)])
+  return vocab_ids

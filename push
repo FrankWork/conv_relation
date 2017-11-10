@@ -3,5 +3,6 @@ server=liuzhihui@219.216.64.88:/home/liuzhihui/advrelation/
 rsync -avh --delete --exclude=saved_models/*/  \
            --exclude=__pycache__/   \
            --exclude=.vscode/   \
+           --exclude=tmp/   \
       ./ $server
 

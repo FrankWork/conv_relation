@@ -30,10 +30,29 @@ import string
 # Dependency imports
 
 import tensorflow as tf
-from .global_names import *
-import .tfrecords as data
+from inputs import tfrecords as data
 # from adversarial_text.data import data_utils
 # from adversarial_text.data import document_generators
+
+# Data filenames
+# Sequence Autoencoder
+ALL_SA = 'all_sa.tfrecords'
+TRAIN_SA = 'train_sa.tfrecords'
+TEST_SA = 'test_sa.tfrecords'
+# Language Model
+ALL_LM = 'all_lm.tfrecords'
+TRAIN_LM = 'train_lm.tfrecords'
+TEST_LM = 'test_lm.tfrecords'
+# Classification
+TRAIN_CLASS = 'train_cl.tfrecords'
+TEST_CLASS = 'test_cl.tfrecords'
+# LM with bidirectional LSTM
+TRAIN_REV_LM = 'train_reverse_lm.tfrecords'
+TEST_REV_LM = 'test_reverse_lm.tfrecords'
+# Classification with bidirectional LSTM
+TRAIN_BD_CLASS = 'train_bidir_cl.tfrecords'
+TEST_BD_CLASS = 'test_bidir_cl.tfrecords'
+
 
 # data = data_utils
 flags = tf.app.flags
@@ -198,14 +217,9 @@ def _generate_test_data(vocab_ids, writer_lm_all, writer_seq_ae_all):
   writer_bd_class.close()
 
 
-def gen_data():
+def gen_data(vocab_ids):
   tf.logging.set_verbosity(tf.logging.INFO)
   # tf.logging.info('Assigning vocabulary ids...')
-  
-  vocab_path = os.path.join(FLAGS.data_dir, FLAGS.vocab_file)
-
-  with open(vocab_path) as vocab_f:
-      vocab_ids =  dict([(line.strip(), i) for i, line in enumerate(vocab_f)])
 
   with _shuff_writer(ALL_LM) as writer_lm_all:
     with _shuff_writer(ALL_SA) as writer_seq_ae_all:
