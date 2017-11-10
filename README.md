@@ -5,6 +5,7 @@
 - combine rnn and cnn, rnn-cnn, cnn-rnn
 - resnet
 - adversarial 
+- distant supervision
 
 
 ## Reference
