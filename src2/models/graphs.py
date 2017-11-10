@@ -23,8 +23,7 @@ import os
 
 import tensorflow as tf
 
-# import adversarial_losses as adv_lib
-# import inputs as inputs_lib
+import models.adv_lib as adv_lib
 import models.layers as layers_lib
 
 flags = tf.app.flags
@@ -108,13 +107,19 @@ class VatxtModel(object):
   graph-building functions.
   """
 
-  def __init__(self, vocab_freqs, cl_logits_input_dim=None):
+  def __init__(self, 
+                vocab_freqs, 
+                lm_inputs=None,
+                cl_inputs=None,
+                eval_inputs=None,
+                cl_logits_input_dim=None):
     self.global_step = tf.contrib.framework.get_or_create_global_step()
     self.vocab_freqs = vocab_freqs
 
     # Cache VatxtInput objects
-    self.cl_inputs = None
-    self.lm_inputs = None
+    self.cl_inputs = cl_inputs
+    self.lm_inputs = lm_inputs
+    self.eval_inputs = eval_inputs
 
     # Cache intermediate Tensors that are reused
     self.tensors = {}
@@ -163,8 +168,6 @@ class VatxtModel(object):
     Returns:
       loss: scalar float.
     """
-    inputs = _inputs('train', pretrain=False)
-    self.cl_inputs = inputs
     embedded = self.layers['embedding'](inputs.tokens)
     self.tensors['cl_embedded'] = embedded
 
@@ -202,8 +205,6 @@ class VatxtModel(object):
     Returns:
       loss: scalar float.
     """
-    inputs = _inputs('train', pretrain=True)
-    self.lm_inputs = inputs
     return self._lm_loss(inputs, compute_loss=compute_loss)
 
   def _lm_loss(self,
@@ -226,7 +227,7 @@ class VatxtModel(object):
 
       return loss
 
-  def eval_graph(self, dataset='test'):
+  def eval_graph(self):
     """Constructs classifier evaluation graph.
 
     Args:
@@ -237,7 +238,7 @@ class VatxtModel(object):
       var_restore_dict: dict mapping variable restoration names to variables.
         Trainable variables will be mapped to their moving average names.
     """
-    inputs = _inputs(dataset, pretrain=False)
+    inputs = self.eval_inputs
     embedded = self.layers['embedding'](inputs.tokens)
     _, next_state, logits, _ = self.cl_loss_from_embedding(
         embedded, inputs=inputs, return_intermediates=True)
@@ -312,8 +313,7 @@ class VatxtModel(object):
       Returns:
         loss: float scalar.
       """
-      if self.lm_inputs is None:
-        self.language_model_graph(compute_loss=False)
+      self.language_model_graph(compute_loss=False)
 
       def logits_from_embedding(embedded, return_next_state=False):
         _, next_state, logits, _ = self.cl_loss_from_embedding(
@@ -390,9 +390,7 @@ class VatxtBidirModel(VatxtModel):
     Returns:
       loss: scalar float.
     """
-    inputs = _inputs('train', pretrain=False, bidir=True)
-    self.cl_inputs = inputs
-    f_inputs, _ = inputs
+    f_inputs, _ = self.cl_inputs
 
     # Embed both forward and reverse with a shared embedding
     embedded = [self.layers['embedding'](inp.tokens) for inp in inputs]
@@ -433,9 +431,7 @@ class VatxtBidirModel(VatxtModel):
     Returns:
       loss: scalar float, sum of forward and reverse losses.
     """
-    inputs = _inputs('train', pretrain=True, bidir=True)
-    self.lm_inputs = inputs
-    f_inputs, r_inputs = inputs
+    f_inputs, r_inputs = self.lm_inputs
     f_loss = self._lm_loss(f_inputs, compute_loss=compute_loss)
     r_loss = self._lm_loss(
         r_inputs,
@@ -447,7 +443,7 @@ class VatxtBidirModel(VatxtModel):
     if compute_loss:
       return f_loss + r_loss
 
-  def eval_graph(self, dataset='test'):
+  def eval_graph(self):
     """Constructs classifier evaluation graph.
 
     Args:
@@ -458,7 +454,7 @@ class VatxtBidirModel(VatxtModel):
       var_restore_dict: dict mapping variable restoration names to variables.
         Trainable variables will be mapped to their moving average names.
     """
-    inputs = _inputs(dataset, pretrain=False, bidir=True)
+    inputs = self.eval_inputs
     embedded = [self.layers['embedding'](inp.tokens) for inp in inputs]
     _, next_states, logits, _ = self.cl_loss_from_embedding(
         embedded, inputs=inputs, return_intermediates=True)
@@ -547,8 +543,7 @@ class VatxtBidirModel(VatxtModel):
       Returns:
         loss: float scalar.
       """
-      if self.lm_inputs is None:
-        self.language_model_graph(compute_loss=False)
+      self.language_model_graph(compute_loss=False)
 
       def logits_from_embedding(embedded, return_next_state=False):
         _, next_states, logits, _ = self.cl_loss_from_embedding(
@@ -593,20 +588,6 @@ class VatxtBidirModel(VatxtModel):
 
     with tf.name_scope('adversarial_loss'):
       return adv_training_methods[FLAGS.adv_training_method]()
-
-
-def _inputs(dataset='train', pretrain=False, bidir=False):
-  return inputs_lib.inputs(
-      data_dir=FLAGS.data_dir,
-      phase=dataset,
-      bidir=bidir,
-      pretrain=pretrain,
-      use_seq2seq=pretrain and FLAGS.use_seq2seq_autoencoder,
-      state_size=FLAGS.rnn_cell_size,
-      num_layers=FLAGS.rnn_num_layers,
-      batch_size=FLAGS.batch_size,
-      unroll_steps=FLAGS.num_timesteps,
-      eos_id=FLAGS.vocab_size - 1)
 
 
 def make_restore_average_vars_dict():

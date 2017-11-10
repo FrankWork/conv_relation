@@ -4,6 +4,7 @@
 - wide and deep
 - combine rnn and cnn, rnn-cnn, cnn-rnn
 - resnet
+- attention
 - adversarial 
 - distant supervision
 
