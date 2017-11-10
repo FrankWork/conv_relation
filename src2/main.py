@@ -1,10 +1,8 @@
-import os
 import tensorflow as tf
-import inputs
 
 from inputs import vocab_lib
 # from inputs import gen_data as gen_data_lib
-from runtime import pretrain
+# from runtime import pretrain
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -18,13 +16,13 @@ tf.app.flags.DEFINE_string("mode", "",
 
 def main(_):
   if FLAGS.mode=='gen_vocab':
-    gen_vocab_lib.gen_vocab(FLAGS.train_file)
-  elif FLAGS.mode=='gen_data':
-    vocab_ids = vocab_lib.get_vocab_ids()
-    gen_data_lib.gen_data(vocab_ids)
-  elif FLAGS.mode == 'pretrain':
-    vocab_freqs = vocab_lib.get_vocab_freqs()
-    pretrain.foo()
+    vocab_lib.gen_vocab(FLAGS.train_file)
+  # elif FLAGS.mode=='gen_data':
+  #   vocab_ids = vocab_lib.get_vocab_ids()
+  #   gen_data_lib.gen_data(vocab_ids)
+  # elif FLAGS.mode == 'pretrain':
+  #   vocab_freqs = vocab_lib.get_vocab_freqs()
+  #   pretrain.foo()
 
 
 

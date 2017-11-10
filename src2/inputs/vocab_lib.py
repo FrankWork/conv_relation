@@ -101,7 +101,7 @@ def get_vocab_freqs():
   """
   path = os.path.join(FLAGS.data_dir, FLAGS.vocab_freq_file)
 
-  with open(vocab_path) as freq_f:
+  with open(path) as freq_f:
       freqs =  [int(line.strip()) for line in freq_f]
   
   FLAGS.vocab_size = len(freqs)

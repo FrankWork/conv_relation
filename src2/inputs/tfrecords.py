@@ -14,9 +14,9 @@
 # ==============================================================================
 """Utilities for generating/preprocessing data for adversarial text models."""
 # import operator
-# import os
+import os
 import random
-# import re
+import re
 
 import tensorflow as tf
 from collections import namedtuple
@@ -61,7 +61,7 @@ def raw_dataset(data_file):
         # TODO: replace digits with <digit/> token
         w = re.sub(r"[0-9]", "0", w) # replace digits with 0s
         sentence.append(w)
-      example = Example(label, entity1, entity2, sentence)
+      example = Raw_Example(label, entity1, entity2, sentence)
       data.append(example)
   return data
 
