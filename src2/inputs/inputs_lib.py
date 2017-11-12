@@ -27,6 +27,9 @@ import tensorflow as tf
 from adversarial_text.data import data_utils
 
 
+flags = tf.app.flags
+FLAGS = flags.FLAGS
+
 class VatxtInput(object):
   """Wrapper around NextQueuedSequenceBatch."""
 
@@ -195,7 +198,7 @@ def _read_single_sequence_example(file_list, tokens_shape=None):
   return seq_key, ctx, sequence
 
 
-def _read_and_batch(data_dir,
+def _read_and_batch(
                     fname,
                     state_name,
                     state_size,
@@ -206,7 +209,6 @@ def _read_and_batch(data_dir,
   """Inputs for text model.
 
   Args:
-    data_dir: str, directory containing TFRecord files of SequenceExample.
     fname: str, input file name.
     state_name: string, key for saved state of LSTM.
     state_size: int, size of LSTM state.
@@ -222,6 +224,7 @@ def _read_and_batch(data_dir,
   Raises:
     ValueError: if file for input specification is not found.
   """
+  data_dir  = FLAGS.data_dir
   data_path = os.path.join(data_dir, fname)
   if not tf.gfile.Exists(data_path):
     raise ValueError('Failed to find file: %s' % data_path)
@@ -257,21 +260,20 @@ def _read_and_batch(data_dir,
   return batch
 
 
-def inputs(data_dir=None,
-           phase='train',
-           bidir=False,
-           pretrain=False,
-           use_seq2seq=False,
-           state_name='lstm',
-           state_size=None,
-           num_layers=0,
-           batch_size=32,
-           unroll_steps=100,
-           eos_id=None):
+def inputs(
+           phase        = 'train',
+           bidir        = False,
+           pretrain     = False,
+           use_seq2seq  = FLAGS.use_seq2seq_autoencoder,
+           state_name   = 'lstm',
+           state_size   = FLAGS.rnn_cell_size,
+           num_layers   = FLAGS.rnn_num_layers,
+           batch_size   = FLAGS.batch_size,
+           unroll_steps = FLAGS.num_timesteps,
+           eos_id       = FLAGS.vocab_size - 1):
   """Inputs for text model.
 
   Args:
-    data_dir: str, directory containing TFRecord files of SequenceExample.
     phase: str, dataset for evaluation {'train', 'valid', 'test'}.
     bidir: bool, bidirectional LSTM.
     pretrain: bool, whether to read pretraining data or classification data.
@@ -287,17 +289,18 @@ def inputs(data_dir=None,
       reverse).
   """
   with tf.name_scope('inputs'):
+    use_seq2seq = pretrain and use_seq2seq
     filenames = _filenames_for_data_spec(phase, bidir, pretrain, use_seq2seq)
 
     if bidir and pretrain:
       # Bidirectional pretraining
       # Requires separate forward and reverse language model data.
       forward_fname, reverse_fname = filenames
-      forward_batch = _read_and_batch(data_dir, forward_fname, state_name,
+      forward_batch = _read_and_batch( forward_fname, state_name,
                                       state_size, num_layers, unroll_steps,
                                       batch_size)
       state_name_rev = state_name + '_reverse'
-      reverse_batch = _read_and_batch(data_dir, reverse_fname, state_name_rev,
+      reverse_batch = _read_and_batch( reverse_fname, state_name_rev,
                                       state_size, num_layers, unroll_steps,
                                       batch_size)
       forward_input = VatxtInput(
@@ -317,7 +320,6 @@ def inputs(data_dir=None,
       # Shared data source, but separate token/state streams
       fname, = filenames
       batch = _read_and_batch(
-          data_dir,
           fname,
           state_name,
           state_size,
@@ -341,7 +343,6 @@ def inputs(data_dir=None,
       # Unidirectional LM or classifier
       fname, = filenames
       batch = _read_and_batch(
-          data_dir,
           fname,
           state_name,
           state_size,

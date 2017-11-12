@@ -269,12 +269,12 @@ def _num_labels(weights):
 
 def optimize(loss,
              global_step,
-             max_grad_norm,
-             lr,
-             lr_decay,
-             sync_replicas=False,
-             replicas_to_aggregate=1,
-             task_id=0):
+             max_grad_norm = FLAGS.max_grad_norm,
+             lr            = FLAGS.learning_rate,
+             lr_decay      = FLAGS.learning_rate_decay_factor,
+             sync_replicas = FLAGS.sync_replicas,
+             replicas_to_aggregate = FLAGS.replicas_to_aggregate,
+             task_id       = FLAGS.task):
   """Builds optimization graph.
 
   * Creates an optimizer, and optionally wraps with SyncReplicasOptimizer

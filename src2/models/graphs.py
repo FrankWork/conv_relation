@@ -83,7 +83,7 @@ flags.DEFINE_float('keep_prob_cl_hidden', 1.0,
                    'keep probability on classification hidden layer')
 
 
-def get_model(vocab_freqs):
+def get_model(vocab_freqs, inputs):
   if FLAGS.bidir_lstm:
     return VatxtBidirModel(vocab_freqs)
   else:
@@ -144,19 +144,23 @@ class VatxtModel(object):
         [FLAGS.cl_hidden_size] * FLAGS.cl_num_layers, cl_logits_input_dim,
         FLAGS.num_classes, FLAGS.keep_prob_cl_hidden)
 
+    self.losses = {}
+    self.losses['cl_loss'] = self.classifier_graph()
+    self.losses['lm_loss'] = self.language_model_graph()
+
   @property
   def pretrained_variables(self):
     return (self.layers['embedding'].trainable_weights +
             self.layers['lstm'].trainable_weights)
 
   def classifier_training(self):
-    loss = self.classifier_graph()
-    train_op = optimize(loss, self.global_step)
+    loss = self.losses['cl_loss']
+    train_op = layers_lib.optimize(loss, self.global_step)
     return train_op, loss, self.global_step
 
   def language_model_training(self):
-    loss = self.language_model_graph()
-    train_op = optimize(loss, self.global_step)
+    loss = self.['lm_loss']
+    train_op = layers_lib.optimize(loss, self.global_step)
     return train_op, loss, self.global_step
 
   def classifier_graph(self):
@@ -168,6 +172,7 @@ class VatxtModel(object):
     Returns:
       loss: scalar float.
     """
+    inputs = self.cl_inputs
     embedded = self.layers['embedding'](inputs.tokens)
     self.tensors['cl_embedded'] = embedded
 
@@ -205,6 +210,7 @@ class VatxtModel(object):
     Returns:
       loss: scalar float.
     """
+    inputs = self.lm_inputs
     return self._lm_loss(inputs, compute_loss=compute_loss)
 
   def _lm_loss(self,
@@ -313,8 +319,6 @@ class VatxtModel(object):
       Returns:
         loss: float scalar.
       """
-      self.language_model_graph(compute_loss=False)
-
       def logits_from_embedding(embedded, return_next_state=False):
         _, next_state, logits, _ = self.cl_loss_from_embedding(
             embedded, inputs=self.lm_inputs, return_intermediates=True)
@@ -543,8 +547,6 @@ class VatxtBidirModel(VatxtModel):
       Returns:
         loss: float scalar.
       """
-      self.language_model_graph(compute_loss=False)
-
       def logits_from_embedding(embedded, return_next_state=False):
         _, next_states, logits, _ = self.cl_loss_from_embedding(
             embedded, inputs=self.lm_inputs, return_intermediates=True)
@@ -603,8 +605,4 @@ def make_restore_average_vars_dict():
   return var_restore_dict
 
 
-def optimize(loss, global_step):
-  return layers_lib.optimize(
-      loss, global_step, FLAGS.max_grad_norm, FLAGS.learning_rate,
-      FLAGS.learning_rate_decay_factor, FLAGS.sync_replicas,
-      FLAGS.replicas_to_aggregate, FLAGS.task)
+

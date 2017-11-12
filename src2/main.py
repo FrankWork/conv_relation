@@ -15,18 +15,7 @@ tf.app.flags.DEFINE_string("test_file", "test_nopos_ty=6.txt", "test data file")
 
 tf.app.flags.DEFINE_string("mode", "", "pretrain, train, evaluate")
 
-def _inputs(dataset='train', pretrain=False, bidir=False):
-  return inputs_lib.inputs(
-      data_dir=FLAGS.data_dir,
-      phase=dataset,
-      bidir=bidir,
-      pretrain=pretrain,
-      use_seq2seq=pretrain and FLAGS.use_seq2seq_autoencoder,
-      state_size=FLAGS.rnn_cell_size,
-      num_layers=FLAGS.rnn_num_layers,
-      batch_size=FLAGS.batch_size,
-      unroll_steps=FLAGS.num_timesteps,
-      eos_id=FLAGS.vocab_size - 1)
+
 
 def main(_):
   data_lib.maybe_gen_data()
@@ -42,6 +31,7 @@ def main(_):
   
   model = graphs.get_model(vocab_freqs, lm_inputs, cl_inputs, eval_inputs)
 
+  # TODO: pass inputs to the model
   if FLAGS.mode == 'pretrain':
     train_lib.pretrain(model)
   elif FLAGS.mode == 'train':
