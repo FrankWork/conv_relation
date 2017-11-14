@@ -96,8 +96,67 @@ Epoch 38, loss 0.01, acc 1.00 0.7545, time 39.66
 Epoch 39, loss 0.01, acc 1.00 0.7534, time 39.60
 Epoch 40, loss 0.01, acc 1.00 0.7541, time 40.93
 
+$ 300d don't train word embedding
+Epoch 1, loss 2.70, acc 0.26 0.4141, time 33.52
+Epoch 2, loss 1.81, acc 0.47 0.5377, time 35.72
+Epoch 3, loss 1.63, acc 0.50 0.5999, time 35.70
+Epoch 4, loss 1.41, acc 0.53 0.6349, time 35.41
+Epoch 5, loss 1.31, acc 0.53 0.6665, time 35.50
+Epoch 6, loss 1.20, acc 0.53 0.6824, time 36.31
+Epoch 7, loss 0.97, acc 0.66 0.6916, time 35.94
+Epoch 8, loss 0.78, acc 0.74 0.7041, time 35.73
+Epoch 9, loss 1.01, acc 0.70 0.7159, time 35.83
+Epoch 10, loss 0.83, acc 0.76 0.7229, time 34.96
+Epoch 11, loss 0.66, acc 0.81 0.7317, time 34.88
+Epoch 12, loss 0.58, acc 0.85 0.7332, time 37.36
+Epoch 13, loss 0.66, acc 0.78 0.7409, time 36.59
+Epoch 14, loss 0.84, acc 0.74 0.7409, time 36.14
+Epoch 15, loss 0.56, acc 0.84 0.7453, time 35.24
+Epoch 16, loss 0.73, acc 0.78 0.7453, time 36.23
+Epoch 17, loss 0.77, acc 0.74 0.7505, time 35.66
+Epoch 18, loss 0.73, acc 0.76 0.7505, time 36.04
+Epoch 19, loss 0.57, acc 0.84 0.7541, time 35.61
+Epoch 20, loss 0.47, acc 0.86 0.7597, time 36.07
+Epoch 21, loss 0.64, acc 0.78 0.7593, time 36.41
+Epoch 22, loss 0.53, acc 0.84 0.7648, time 35.72
+Epoch 23, loss 0.51, acc 0.81 0.7622, time 36.20
+Epoch 24, loss 0.44, acc 0.85 0.7626, time 35.95
+Epoch 25, loss 0.59, acc 0.80 0.7630, time 35.56
+Epoch 26, loss 0.37, acc 0.88 0.7667, time 35.82
+Epoch 27, loss 0.40, acc 0.84 0.7652, time 36.59
+Epoch 28, loss 0.46, acc 0.85 0.7663, time 36.53
+Epoch 29, loss 0.50, acc 0.86 0.7681, time 36.13
+Epoch 30, loss 0.50, acc 0.81 0.7700, time 35.62
+Epoch 31, loss 0.38, acc 0.89 0.7663, time 36.11
+Epoch 32, loss 0.38, acc 0.89 0.7685, time 36.55
+Epoch 33, loss 0.36, acc 0.91 0.7729, time 36.08
+Epoch 34, loss 0.42, acc 0.85 0.7740, time 37.55
+Epoch 35, loss 0.28, acc 0.92 0.7718, time 36.04
+Epoch 36, loss 0.36, acc 0.88 0.7663, time 36.37
+Epoch 37, loss 0.38, acc 0.88 0.7700, time 35.84
+Epoch 38, loss 0.31, acc 0.89 0.7703, time 35.45
+Epoch 39, loss 0.35, acc 0.87 0.7685, time 35.75
+Epoch 40, loss 0.34, acc 0.89 0.7736, time 36.10
+Epoch 41, loss 0.21, acc 0.94 0.7766, time 36.24
+Epoch 42, loss 0.35, acc 0.88 0.7703, time 36.75
+Epoch 43, loss 0.22, acc 0.94 0.7707, time 35.61
+Epoch 44, loss 0.32, acc 0.89 0.7703, time 35.78
+Epoch 45, loss 0.31, acc 0.89 0.7696, time 35.79
+Epoch 46, loss 0.36, acc 0.87 0.7678, time 35.97
+Epoch 47, loss 0.24, acc 0.92 0.7700, time 35.38
+Epoch 48, loss 0.24, acc 0.94 0.7718, time 35.67
+Epoch 49, loss 0.24, acc 0.88 0.7696, time 36.53
+Epoch 50, loss 0.26, acc 0.91 0.7725, time 35.99
+Done training, best_step: 3280, best_acc: 0.7766
+duration: 1799
+accuracy: 0.7766
+
+
+
 max_len=97: 0.7600
 max_len=70: 0.7563
 
-
-word_dim=300: 0.7611
+word_dim=300, train embedding       : 0.7611
+word_dim=300, don't train embedding, 
+              reduce vocab size     : 0.7729
+word_dim=300, don't train embedding : 0.7766
