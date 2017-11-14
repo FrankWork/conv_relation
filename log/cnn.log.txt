@@ -53,7 +53,51 @@ Epoch 50, loss 0.30, acc 0.84 0.7600, time 8.59
 Done training, best_step: 4000, best_acc: 0.7600
 duration: 450
 
+$ 300d 
 
+Epoch 1, loss 2.62, acc 0.33 0.4796, time 34.96
+Epoch 2, loss 1.58, acc 0.50 0.6014, time 38.97
+Epoch 3, loss 1.28, acc 0.60 0.6669, time 38.90
+Epoch 4, loss 0.98, acc 0.65 0.6897, time 37.97
+Epoch 5, loss 0.71, acc 0.78 0.7085, time 38.03
+Epoch 6, loss 0.65, acc 0.81 0.7188, time 37.84
+Epoch 7, loss 0.52, acc 0.88 0.7313, time 38.08
+Epoch 8, loss 0.42, acc 0.85 0.7350, time 37.81
+Epoch 9, loss 0.32, acc 0.91 0.7402, time 37.71
+Epoch 10, loss 0.25, acc 0.93 0.7372, time 38.43
+Epoch 11, loss 0.20, acc 0.96 0.7446, time 39.02
+Epoch 12, loss 0.16, acc 0.98 0.7494, time 39.38
+Epoch 13, loss 0.16, acc 0.94 0.7471, time 38.17
+Epoch 14, loss 0.12, acc 0.96 0.7519, time 39.28
+Epoch 15, loss 0.09, acc 0.98 0.7523, time 38.05
+Epoch 16, loss 0.10, acc 0.98 0.7552, time 38.34
+Epoch 17, loss 0.07, acc 0.99 0.7560, time 38.31
+Epoch 18, loss 0.07, acc 0.98 0.7549, time 38.21
+Epoch 19, loss 0.04, acc 0.99 0.7586, time 38.70
+Epoch 20, loss 0.04, acc 1.00 0.7611, time 39.40
+Epoch 21, loss 0.07, acc 0.99 0.7560, time 38.27
+Epoch 22, loss 0.05, acc 0.99 0.7560, time 38.80
+Epoch 23, loss 0.04, acc 0.99 0.7563, time 38.17
+Epoch 24, loss 0.04, acc 1.00 0.7578, time 39.72
+Epoch 25, loss 0.02, acc 1.00 0.7589, time 38.46
+Epoch 26, loss 0.02, acc 1.00 0.7552, time 38.18
+Epoch 27, loss 0.02, acc 0.99 0.7549, time 38.06
+Epoch 28, loss 0.01, acc 1.00 0.7571, time 39.01
+Epoch 29, loss 0.02, acc 1.00 0.7534, time 38.58
+Epoch 30, loss 0.02, acc 1.00 0.7541, time 37.99
+Epoch 31, loss 0.01, acc 1.00 0.7575, time 38.33
+Epoch 32, loss 0.01, acc 1.00 0.7582, time 38.26
+Epoch 33, loss 0.01, acc 1.00 0.7586, time 38.27
+Epoch 34, loss 0.01, acc 1.00 0.7560, time 38.66
+Epoch 35, loss 0.01, acc 1.00 0.7567, time 38.34
+Epoch 36, loss 0.02, acc 0.99 0.7586, time 38.74
+Epoch 37, loss 0.01, acc 1.00 0.7549, time 40.42
+Epoch 38, loss 0.01, acc 1.00 0.7545, time 39.66
+Epoch 39, loss 0.01, acc 1.00 0.7534, time 39.60
+Epoch 40, loss 0.01, acc 1.00 0.7541, time 40.93
 
 max_len=97: 0.7600
 max_len=70: 0.7563
+
+
+word_dim=300: 0.7611

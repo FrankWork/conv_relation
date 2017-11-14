@@ -19,7 +19,10 @@ class CNNModel(object):
     self.rid = tf.placeholder(tf.int32, [None])
     # embedding initialization
     # xavier = tf.contrib.layers.xavier_initializer()
-    word_embed = tf.get_variable('word_embed', initializer=word_embed, dtype=tf.float32)
+    word_embed = tf.get_variable('word_embed', 
+                                 initializer=word_embed, 
+                                 dtype=tf.float32,
+                                 trainable=False)
     # word_embed = tf.get_variable('word_embed', [len(word_embed), word_dim], dtype=tf.float32)
     pos_embed = tf.get_variable('pos_embed', shape=[pos_num, pos_dim])
     relation = tf.one_hot(self.rid, num_relations)       # batch_size, num_relations

@@ -4,5 +4,6 @@ rsync -avh --delete --exclude=saved_models/*/  \
            --exclude=__pycache__/   \
            --exclude=.vscode/   \
            --exclude=tmp/   \
+           --exclude=GoogleNews-vectors-negative300.bin \
       ./ $server
 

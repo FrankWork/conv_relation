@@ -7,7 +7,8 @@ from .common import *
 
 # compile:
 # TF_INC=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
-# g++ -std=c++11 -shared grl_op.cc -o grl_op.so -fPIC -I $TF_INC -O2 -D_GLIBCXX_USE_CXX11_ABI=0
+# TF_LIB=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_lib())')
+# g++ -std=c++11 -shared grl_op.cc -o grl_op.so -fPIC -D_GLIBCXX_USE_CXX11_ABI=0 -I$TF_INC -I$TF_INC/external/nsync/public -L$TF_LIB -ltensorflow_framework -O2
 
 # load op library
 op_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'grl_op.so')

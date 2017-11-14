@@ -15,13 +15,15 @@ import models
 
 tf.app.flags.DEFINE_string("train_file", "data/train_nopos_ty=6.txt", "training file")
 tf.app.flags.DEFINE_string("test_file", "data/test_nopos_ty=6.txt", "Test file")
-tf.app.flags.DEFINE_string("senna_embed_file", "data/embedding/senna/embeddings.txt", "senna word embedding")
-tf.app.flags.DEFINE_string("senna_words_file", "data/embedding/senna/words.lst", "senna word list")
+tf.app.flags.DEFINE_string("vocab_file", "data/vocab.txt", "vocab file, automantic generated")
+tf.app.flags.DEFINE_string("word_embed_orig", "data/GoogleNews-vectors-negative300.bin", "google news word embeddding")
+tf.app.flags.DEFINE_string("word_embed_trim", "data/embed300.trim.npy", "trimmed google embedding")
+tf.app.flags.DEFINE_string("relations_file", "data/relations.txt", "relation and label file")
 tf.app.flags.DEFINE_string("logdir", "saved_models/", "where to save the model")
 
 tf.app.flags.DEFINE_integer("max_len", 97, "if length of a sentence is large than max_len, truncate it")
 tf.app.flags.DEFINE_integer("num_relations", 19, "number of relations")
-tf.app.flags.DEFINE_integer("word_dim", 50, "word embedding size")
+tf.app.flags.DEFINE_integer("word_dim", None, "word embedding size, automatic parse from data")
 tf.app.flags.DEFINE_integer("num_epochs", 50, "number of epochs")
 tf.app.flags.DEFINE_integer("batch_size", 100, "batch size")
 
@@ -156,10 +158,11 @@ def main(_):
   raw_train_data = reader.load_raw_data(FLAGS.train_file, FLAGS.max_len)
   raw_test_data = reader.load_raw_data(FLAGS.test_file, FLAGS.max_len)
 
-  word2id, id2word, word_embed = reader.gen_embeddings(
-                      raw_train_data, raw_test_data, 
-                      FLAGS.senna_embed_file, FLAGS.senna_words_file, 
-                      FLAGS.word_dim)
+  word2id, id2word = reader.build_vocab(raw_train_data, raw_test_data, FLAGS.vocab_file)
+
+  word_embed = reader.gen_embeddings(word2id,
+                                     FLAGS.word_embed_orig, 
+                                     FLAGS.word_embed_trim)
   max_len = FLAGS.max_len + 2 # append start and end word
   train_data = reader.gen_batch_data(raw_train_data, word2id, max_len, 
                                 FLAGS.num_epochs, FLAGS.batch_size, shuffle=True)

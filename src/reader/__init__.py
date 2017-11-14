@@ -1,6 +1,9 @@
+import os
 import re
 import numpy as np
+import tensorflow as tf
 
+FLAGS = tf.app.flags.FLAGS
 
 def load_raw_data(filename, max_len=None):
   '''load raw data from text file, 
@@ -29,51 +32,66 @@ def load_raw_data(filename, max_len=None):
       data.append(example)
   return data
 
-def gen_embeddings(raw_train_data, raw_test_data, senna_embed_file, senna_words_file, 
-                  word_emb_dim):
-  '''collect words in sentence and find their corresponding pre-trained word embedding
-  '''
+def build_vocab(raw_train_data, raw_test_data, vocab_file):
+  '''collect words in sentence'''
   PAD_WORD = "<pad>"
   START_WORD = "<s>"
   END_WORD = "<e>"
-  
-  words_in_data = set()
-  for example in raw_train_data:
-    words_in_data.update(example[5:])
+  if not os.path.exists(vocab_file):
+    # load words in data
+    words_in_data = set()
+    for example in raw_train_data:
+      words_in_data.update(example[5:])
 
-  for example in raw_test_data:
-    words_in_data.update(example[5:])
+    for example in raw_test_data:
+      words_in_data.update(example[5:])
+    
+    # write vocab
+    with open(vocab_file, 'w') as f:
+      f.write(PAD_WORD+'\n')
+      f.write(START_WORD+'\n')
+      f.write(END_WORD+'\n')
+      for w in sorted(list(words_in_data)):
+        f.write(w + '\n')
+  
+  word2id = {}
+  id2word = {}
+  with open(vocab_file) as f:
+    for i, line in enumerate(f):
+      w = line.strip()
+      word2id[w] = i
+      id2word[id] = w
 
-  
-  word2id = {PAD_WORD:0, START_WORD: 1, END_WORD: 2}
-  id2word = {0:PAD_WORD, 1: START_WORD, 2: END_WORD}
-  current_id = 3
-  for w in sorted(list(words_in_data)):
-    word2id[w] = current_id
-    id2word[current_id] = w
-    current_id += 1
+  return word2id, id2word
 
-  senna_words = []
-  with open(senna_words_file) as f:
-    for line in f:
-      senna_words.append(line.strip())
+def gen_embeddings(word2id, word_embed_orig, word_embed_trim):
+  '''trim unnecessary words from original pre-trained word embedding
+
+  Args:
+    word2id: dict, {'I':0, 'you': 1, ...}
+    word_embed_oirg: string, file name of the original pre-trained embedding
+    word_embed_trim: string, file name of the trimmed embedding
+  '''
+  if not os.path.exists(word_embed_trim):
+    import gensim
+    model = gensim.models.KeyedVectors.load_word2vec_format(word_embed_orig, binary=True)
+    
+    shape = (len(word2id), model.vector_size)
+    word_embed = np.zeros(shape, dtype=np.float32)
+    for w, i in word2id.items():
+      if w in model:
+        word_embed[i] = model[w]
+    np.save(word_embed_trim, word_embed)
   
-  n_words = len(word2id)
-  embed = [ [] for _ in range(n_words)]
-  with open(senna_embed_file) as f:
-    idx = 0
-    for line in f:
-      senna_w = senna_words[idx]
-      idx += 1
-      if senna_w in word2id:
-        id = word2id[senna_w]
-        embed[id] = [float(val) for val in line.strip().split()]
-        assert len(embed[id]) == word_emb_dim
-  for id in range(n_words):
-    if embed[id] == []:
-      embed[id] = [.0] * word_emb_dim
-  
-  return word2id, id2word, embed
+  word_embed = np.load(word_embed_trim)
+  FLAGS.word_dim = word_embed.shape[1]
+  zeros = np.zeros((FLAGS.word_dim), dtype=np.float32)
+  n_zero = 0
+  for i in range(word_embed.shape[0]):
+    if np.array_equal(word_embed[i], zeros):
+      n_zero += 1
+  print("%d UNKs." % n_zero)
+  return word_embed
 
 def _format_data(raw_data, word2id, max_len):
   '''format data used in neural nets
@@ -156,3 +174,6 @@ def gen_batch_data(raw_data, word2id, max_len, num_epoches, batch_size, shuffle=
         batch_data['lexical_id'].append(lexical)
         batch_data['rid'].append(rid)
       yield batch_data
+
+
+
