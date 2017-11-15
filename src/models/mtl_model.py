@@ -113,19 +113,19 @@ class MTLModel(BaseModel):
 
     sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
     if is_train and keep_prob < 1:
-        sent_pos = tf.nn.dropout(sent_pos, keep_prob)
+      sent_pos = tf.nn.dropout(sent_pos, keep_prob)
     shared = cnn_forward_lite('cnn-shared', sent_pos, max_len, num_filters, use_grl=True)
     loss_adv = adversarial_loss(shared, relation, is_train, keep_prob)
 
-    # 10 classifier, task related loss
-    probs_buf = []
-    task_features = []
-    loss_task = tf.constant(0, dtype=tf.float32)
+    # 10 classifiers for 10 tasks, task related loss
     # e.g. A-relation, B-relation and Other
     # task-A (A-relation): 3 class: (e1, e2), (e2, e1), other
     # task-B (B-relation): 3 class: (e1, e2), (e2, e1), other
-    # task-O (Other)     : task-A and task-B are classified as `other`
-    for i in range(num_relations-1):
+    # task-O (Other)     : 2 class: true, false
+    probs_buf = []
+    task_features = []
+    loss_task = tf.constant(0, dtype=tf.float32)
+    for i in range(num_relations):
       sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
       if is_train and keep_prob < 1:
         sent_pos = tf.nn.dropout(sent_pos, keep_prob)
@@ -145,8 +145,13 @@ class MTLModel(BaseModel):
       probs = tf.nn.softmax(logits)
       probs_buf.append(probs)
 
-      # TODO labels
-      # self.rid, self.direction
+      # TODO labels: 0:(e1,e2), 1:(e2,e1), 2:(other)
+      # self.rid:       5, 5, 7, 7, 1, 1
+      # self.direction: 0, 1, 0, 1, 0, 0
+      # labels i==5     0, 1, 2, 2, 2, 2      3 class
+      # labels i==7     2, 2, 0, 1, 2, 2      3 class
+      # labels i==1     1, 1, 1, 1, 0, 0      2 class
+      
       labels = tf.cast(tf.equal(self.rid, i), tf.int32) # (batch, 1)
       labels = tf.one_hot(labels, 2)  # (batch, 2)
       
