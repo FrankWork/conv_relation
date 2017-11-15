@@ -63,3 +63,22 @@ class RNNModel(object):
     optimizer = tf.train.AdamOptimizer(lrn_rate)
     self.train_op = optimizer.minimize(self.loss, global_step)
     self.global_step = global_step
+
+
+def build_rnn_model(word_embed, max_len):
+  '''Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification'''
+  with tf.name_scope("Train"):
+    with tf.variable_scope('RNNModel', reuse=None):
+      m_train = models.RNNModel( word_embed, FLAGS.word_dim, max_len,
+                    FLAGS.pos_num, FLAGS.pos_dim, 
+                    FLAGS.num_relations, FLAGS.keep_prob, 
+                    FLAGS.rnn_size, FLAGS.rnn_layers,
+                    FLAGS.lrn_rate, is_train=True)
+  with tf.name_scope('Valid'):
+    with tf.variable_scope('RNNModel', reuse=True):
+      m_valid = models.RNNModel( word_embed, FLAGS.word_dim, max_len,
+                    FLAGS.pos_num, FLAGS.pos_dim, 
+                    FLAGS.num_relations, 1.0, 
+                    FLAGS.rnn_size, FLAGS.rnn_layers,
+                    FLAGS.lrn_rate, is_train=False)
+  return m_train, m_valid

@@ -8,7 +8,7 @@ import os
 import time
 import sys
 import tensorflow as tf
-import reader
+from reader import base as base_reader
 import models
 
 
@@ -43,78 +43,13 @@ tf.app.flags.DEFINE_float("decay_rate", 0.97, "learning rate decay rate")
 tf.app.flags.DEFINE_float("lrn_rate", 1e-3, "learning rate")
 tf.app.flags.DEFINE_float("keep_prob", 0.5, "dropout keep probability")
 
-tf.app.flags.DEFINE_string("model", "cnn", "cnn model")
+tf.app.flags.DEFINE_string("model", "cnn", "cnn or mtl model")
 tf.app.flags.DEFINE_boolean('test', False, 'set True to test')
 
 FLAGS = tf.app.flags.FLAGS
 
-def build_cnn_model(word_embed, max_len):
-  '''Relation Classification via Convolutional Deep Neural Network'''
-  with tf.name_scope("Train"):
-    with tf.variable_scope('CNNModel', reuse=None):
-      m_train = models.CNNModel( word_embed, FLAGS.word_dim, max_len,
-                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
-                    FLAGS.keep_prob, FLAGS.filter_size, FLAGS.num_filters, 
-                    FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=True)
-  with tf.name_scope('Valid'):
-    with tf.variable_scope('CNNModel', reuse=True):
-      m_valid = models.CNNModel( word_embed, FLAGS.word_dim, max_len,
-                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
-                    1.0, FLAGS.filter_size, FLAGS.num_filters, 
-                    FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=False)
-  return m_train, m_valid
 
-def build_rnn_model(word_embed, max_len):
-  '''Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification'''
-  with tf.name_scope("Train"):
-    with tf.variable_scope('RNNModel', reuse=None):
-      m_train = models.RNNModel( word_embed, FLAGS.word_dim, max_len,
-                    FLAGS.pos_num, FLAGS.pos_dim, 
-                    FLAGS.num_relations, FLAGS.keep_prob, 
-                    FLAGS.rnn_size, FLAGS.rnn_layers,
-                    FLAGS.lrn_rate, is_train=True)
-  with tf.name_scope('Valid'):
-    with tf.variable_scope('RNNModel', reuse=True):
-      m_valid = models.RNNModel( word_embed, FLAGS.word_dim, max_len,
-                    FLAGS.pos_num, FLAGS.pos_dim, 
-                    FLAGS.num_relations, 1.0, 
-                    FLAGS.rnn_size, FLAGS.rnn_layers,
-                    FLAGS.lrn_rate, is_train=False)
-  return m_train, m_valid
-
-def build_rcnn_model(word_embed, max_len):
-  '''Bidirectional Recurrent Convolutional Neural Network for Relation Classification'''
-  with tf.name_scope("Train"):
-    with tf.variable_scope('RCNNModel', reuse=None):
-      m_train = models.RCNNModel( word_embed, FLAGS.word_dim, max_len,
-                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
-                    FLAGS.keep_prob, FLAGS.filter_size, FLAGS.num_filters, 
-                    FLAGS.rnn_size, FLAGS.rnn_layers, FLAGS.lrn_rate, is_train=True)
-  with tf.name_scope('Valid'):
-    with tf.variable_scope('RCNNModel', reuse=True):
-      m_valid = models.RCNNModel( word_embed, FLAGS.word_dim, max_len,
-                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
-                    1.0, FLAGS.filter_size, FLAGS.num_filters, 
-                    FLAGS.rnn_size, FLAGS.rnn_layers, FLAGS.lrn_rate, is_train=False)
-  return m_train, m_valid
-
-def build_mtl_model(word_embed, max_len):
-  '''Adversarial Multi-task Learning for Text Classification'''
-  with tf.name_scope("Train"):
-    with tf.variable_scope('MTLModel', reuse=None):
-      m_train = models.MTLModel( word_embed, FLAGS.word_dim, max_len,
-                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
-                    FLAGS.keep_prob, FLAGS.filter_size, FLAGS.num_filters, 
-                    FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=True)
-  with tf.name_scope('Valid'):
-    with tf.variable_scope('MTLModel', reuse=True):
-      m_valid = models.MTLModel( word_embed, FLAGS.word_dim, max_len,
-                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
-                    1.0, FLAGS.filter_size, FLAGS.num_filters, 
-                    FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=False)
-  return m_train, m_valid
-
-def train(sess, m_train, m_valid, train_data, get_train_feed, test_feed, saver, save_path):
+def train(sess, m_train, m_valid, train_data, get_train_feed, test_feed):
   n = 1
   best = .0
   best_step = n
@@ -133,7 +68,7 @@ def train(sess, m_train, m_valid, train_data, get_train_feed, test_feed, saver, 
       if best < v_acc:
         best = v_acc
         best_step = n
-        saver.save(sess, save_path, best_step)
+        m_train.save(sess, best_step)
       print("Epoch %d, loss %.2f, acc %.2f %.4f, time %.2f" % 
                                 (epoch, loss, acc, v_acc, duration))
       sys.stdout.flush()
@@ -142,52 +77,43 @@ def train(sess, m_train, m_valid, train_data, get_train_feed, test_feed, saver, 
   print('Done training, best_step: %d, best_acc: %.4f' % (best_step, best))
   print('duration: %d' % duration)
 
-def test(sess, acc_tensor, feed):
-  accuracy = sess.run(acc_tensor, feed)
+def test(sess, m_valid, feed):
+  m_valid.restore(sess)
+  accuracy = sess.run(m_valid.accuracy, feed)
   print('accuracy: %.4f' % accuracy)
 
-def get_saver(dir_name):
-  var_list = None
-  saver = tf.train.Saver(var_list)
-
-  save_dir = os.path.join(FLAGS.logdir, dir_name)
-  save_path = os.path.join(save_dir, "model.ckpt")
-
-  return saver, save_dir, save_path
-
-
 def main(_):
-  train_data, test_data = reader.base.inputs()
+  train_data, test_data, word_embed = base_reader.inputs(FLAGS.model=='mtl')
 
   with tf.Graph().as_default():
     if FLAGS.model == 'cnn':
-      m_train, m_valid = build_cnn_model(word_embed, max_len)
-      saver, save_dir, save_path = get_saver('cnn/')
-    elif FLAGS.model == 'rnn':
-      m_train, m_valid = build_rnn_model(word_embed, max_len)
-      saver, save_dir, save_path = get_saver('rnn/')
-    elif FLAGS.model == 'rcnn':
-      m_train, m_valid = build_rcnn_model(word_embed, max_len)
-      saver, save_dir, save_path = get_saver('rcnn/')
+      m_train, m_valid = models.cnn_model.build_train_valid_model(word_embed)
     elif FLAGS.model == 'mtl':
-      m_train, m_valid = build_mtl_model(word_embed, max_len)
-      saver, save_dir, save_path = get_saver('mtl/')
+      m_train, m_valid = models.mtl_model.build_train_valid_model(word_embed)
+    
+    m_train.set_saver(FLAGS.model)
 
-
+    # TODO mtl_input
     test_feed = {
           m_valid.sent_id : test_data['sent_id'],
           m_valid.pos1_id : test_data['pos1_id'],
           m_valid.pos2_id : test_data['pos2_id'],
           m_valid.lexical_id : test_data['lexical_id'],
           m_valid.rid : test_data['rid'],
-      }
-    get_train_feed = lambda m_train, batch_data: {
+    }
+    if FLAGS.model == 'mtl':
+      test_feed[m_valid.direction] = test_data['direction']
+    
+    def get_train_feed(m_train, batch_data):
+      batch_feed = {
           m_train.sent_id : batch_data['sent_id'],
           m_train.pos1_id : batch_data['pos1_id'],
           m_train.pos2_id : batch_data['pos2_id'],
           m_train.lexical_id : batch_data['lexical_id'],
           m_train.rid : batch_data['rid'],
       }
+      if FLAGS.model == 'mtl':
+        batch_feed[m_train.direction] = batch_data['direction']
     
     init_op = tf.group(tf.global_variables_initializer(),
                         tf.local_variables_initializer())# for file queue
@@ -197,14 +123,10 @@ def main(_):
       print('='*80)
       
       if not FLAGS.test:
-        # ckpt = tf.train.get_checkpoint_state(save_dir)
-        # saver.restore(sess, ckpt.model_checkpoint_path)
-        train(sess, m_train, m_valid, train_data, get_train_feed, 
-                                            test_feed, saver, save_path)
+        # m_train.restore(sess)
+        train(sess, m_train, m_valid, train_data, get_train_feed, test_feed)
 
-      ckpt = tf.train.get_checkpoint_state(save_dir)
-      saver.restore(sess, ckpt.model_checkpoint_path)
-      test(sess, m_valid.accuracy, test_feed)
+      test(sess, m_valid, test_feed)
   
           
 if __name__ == '__main__':

@@ -1,12 +1,16 @@
 import tensorflow as tf
+from models.base_model import BaseModel
 from .common import *
 
+FLAGS = tf.app.flags.FLAGS
 
-class CNNModel(object):
+
+class CNNModel(BaseModel):
   '''
   Relation Classification via Convolutional Deep Neural Network
   http://www.aclweb.org/anthology/C14-1220
   '''
+
   def __init__(self, word_embed, word_dim, max_len, 
               pos_num, pos_dim, num_relations,
               keep_prob, filter_size, num_filters,
@@ -73,3 +77,22 @@ class CNNModel(object):
     with tf.control_dependencies(update_ops):# for batch_norm
       self.train_op = optimizer.minimize(self.loss, global_step)
     self.global_step = global_step
+
+  
+
+
+def build_train_valid_model(word_embed):
+  '''Relation Classification via Convolutional Deep Neural Network'''
+  with tf.name_scope("Train"):
+    with tf.variable_scope('CNNModel', reuse=None):
+      m_train = CNNModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
+                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
+                    FLAGS.keep_prob, FLAGS.filter_size, FLAGS.num_filters, 
+                    FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=True)
+  with tf.name_scope('Valid'):
+    with tf.variable_scope('CNNModel', reuse=True):
+      m_valid = CNNModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
+                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
+                    1.0, FLAGS.filter_size, FLAGS.num_filters, 
+                    FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=False)
+  return m_train, m_valid

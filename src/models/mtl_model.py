@@ -2,6 +2,7 @@ import random
 import os
 import tensorflow as tf
 from tensorflow.python.framework import ops
+from models.base_model import BaseModel
 from .common import *
 
 
@@ -78,12 +79,15 @@ class MTLModel(object):
     self.pos2_id = tf.placeholder(tf.int32, [None, max_len])
     self.lexical_id = tf.placeholder(tf.int32, [None, 6])
     self.rid = tf.placeholder(tf.int32, [None])
+    self.direction = tf.placeholder(tf.int32, [None])
+
     # embedding initialization
-    # xavier = tf.contrib.layers.xavier_initializer()
-    word_embed = tf.get_variable('word_embed', initializer=word_embed, dtype=tf.float32)
-    # word_embed = tf.get_variable('word_embed', [len(word_embed), word_dim], dtype=tf.float32)
+    word_embed = tf.get_variable('word_embed', 
+                                 initializer = word_embed, 
+                                 dtype       = tf.float32,
+                                 trainable   = False)
     pos_embed = tf.get_variable('pos_embed', shape=[pos_num, pos_dim])
-    relation = tf.one_hot(self.rid, num_relations)
+    # relation = tf.one_hot(self.rid, num_relations)
 
     # # embedding lookup
     lexical = tf.nn.embedding_lookup(word_embed, self.lexical_id) # batch_size, 6, word_dim
@@ -170,3 +174,19 @@ class MTLModel(object):
       self.train_op = optimizer.minimize(self.loss, global_step)
     self.global_step = global_step
    
+
+def build_train_valid_model(word_embed):
+  '''Adversarial Multi-task Learning for Text Classification'''
+  with tf.name_scope("Train"):
+    with tf.variable_scope('MTLModel', reuse=None):
+      m_train = models.MTLModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
+                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
+                    FLAGS.keep_prob, FLAGS.filter_size, FLAGS.num_filters, 
+                    FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=True)
+  with tf.name_scope('Valid'):
+    with tf.variable_scope('MTLModel', reuse=True):
+      m_valid = models.MTLModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
+                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
+                    1.0, FLAGS.filter_size, FLAGS.num_filters, 
+                    FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=False)
+  return m_train, m_valid

@@ -74,3 +74,20 @@ class RCNNModel(object):
     self.global_step = tf.Variable(0, trainable=False, name='step', dtype=tf.int32)
     optimizer = tf.train.AdamOptimizer(lrn_rate)
     self.train_op = optimizer.minimize(self.loss, self.global_step)
+
+
+def build_rcnn_model(word_embed, max_len):
+  '''Bidirectional Recurrent Convolutional Neural Network for Relation Classification'''
+  with tf.name_scope("Train"):
+    with tf.variable_scope('RCNNModel', reuse=None):
+      m_train = models.RCNNModel( word_embed, FLAGS.word_dim, max_len,
+                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
+                    FLAGS.keep_prob, FLAGS.filter_size, FLAGS.num_filters, 
+                    FLAGS.rnn_size, FLAGS.rnn_layers, FLAGS.lrn_rate, is_train=True)
+  with tf.name_scope('Valid'):
+    with tf.variable_scope('RCNNModel', reuse=True):
+      m_valid = models.RCNNModel( word_embed, FLAGS.word_dim, max_len,
+                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
+                    1.0, FLAGS.filter_size, FLAGS.num_filters, 
+                    FLAGS.rnn_size, FLAGS.rnn_layers, FLAGS.lrn_rate, is_train=False)
+  return m_train, m_valid
