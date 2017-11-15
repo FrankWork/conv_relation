@@ -64,7 +64,18 @@ def cnn_forward_lite(name, sent_pos, max_len, num_filters, use_grl=False):
 
     return pools
 
-class MTLModel(object):
+def adversarial_loss(feature, relation, is_train, keep_prob):
+  feature_size = feature.shape.as_list()[1]
+  if is_train and keep_prob < 1:
+      feature = tf.nn.dropout(feature, keep_prob)
+  # Map the features to 19 classes
+  out_size = relation.shape.as_list()[1]
+  logits, _ = linear_layer('linear_adv', feature, feature_size, out_size)
+  loss_adv = tf.reduce_mean(
+      tf.nn.softmax_cross_entropy_with_logits(labels=relation, logits=logits))
+  return loss_adv
+
+class MTLModel(BaseModel):
   '''
   Adversarial Multi-task Learning for Text Classification
   http://www.aclweb.org/anthology/P/P17/P17-1001.pdf
@@ -87,7 +98,6 @@ class MTLModel(object):
                                  dtype       = tf.float32,
                                  trainable   = False)
     pos_embed = tf.get_variable('pos_embed', shape=[pos_num, pos_dim])
-    # relation = tf.one_hot(self.rid, num_relations)
 
     # # embedding lookup
     lexical = tf.nn.embedding_lookup(word_embed, self.lexical_id) # batch_size, 6, word_dim
@@ -96,26 +106,26 @@ class MTLModel(object):
     sentence = tf.nn.embedding_lookup(word_embed, self.sent_id)   # batch_size, max_len, word_dim
     pos1 = tf.nn.embedding_lookup(pos_embed, self.pos1_id)       # batch_size, max_len, pos_dim
     pos2 = tf.nn.embedding_lookup(pos_embed, self.pos2_id)       # batch_size, max_len, pos_dim
-    
+    relation = tf.one_hot(self.rid, num_relations)
+
     # learn features from data
     # adversarial loss
+
     sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
     if is_train and keep_prob < 1:
         sent_pos = tf.nn.dropout(sent_pos, keep_prob)
     shared = cnn_forward_lite('cnn-shared', sent_pos, max_len, num_filters, use_grl=True)
-    shared_size = shared.shape.as_list()[1]
-    if is_train and keep_prob < 1:
-        shared = tf.nn.dropout(shared, keep_prob)
-    # Map the features to 19 classes
-    logits, _ = linear_layer('linear_adv', shared, shared_size, num_relations)
-    loss_adv = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(labels=relation, logits=logits))
+    loss_adv = adversarial_loss(shared, relation, is_train, keep_prob)
 
-    # 19 classifier, task related loss
+    # 10 classifier, task related loss
     probs_buf = []
     task_features = []
     loss_task = tf.constant(0, dtype=tf.float32)
-    for i in range(num_relations):
+    # e.g. A-relation, B-relation and Other
+    # task-A (A-relation): 3 class: (e1, e2), (e2, e1), other
+    # task-B (B-relation): 3 class: (e1, e2), (e2, e1), other
+    # task-O (Other)     : task-A and task-B are classified as `other`
+    for i in range(num_relations-1):
       sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
       if is_train and keep_prob < 1:
         sent_pos = tf.nn.dropout(sent_pos, keep_prob)
@@ -129,12 +139,14 @@ class MTLModel(object):
       if is_train and keep_prob < 1:
         feature = tf.nn.dropout(feature, keep_prob)
 
-      # Map the features to 2 classes
-      logits, _ = linear_layer('linear_%d'%i, feature, feature_size, 2)
+      # Map the features to 3 classes
+      logits, _ = linear_layer('linear_%d'%i, feature, feature_size, 3)
 
       probs = tf.nn.softmax(logits)
       probs_buf.append(probs)
 
+      # TODO labels
+      # self.rid, self.direction
       labels = tf.cast(tf.equal(self.rid, i), tf.int32) # (batch, 1)
       labels = tf.one_hot(labels, 2)  # (batch, 2)
       
@@ -180,13 +192,13 @@ def build_train_valid_model(word_embed):
   with tf.name_scope("Train"):
     with tf.variable_scope('MTLModel', reuse=None):
       m_train = models.MTLModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
-                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
+                    FLAGS.pos_num, FLAGS.pos_dim, 10,
                     FLAGS.keep_prob, FLAGS.filter_size, FLAGS.num_filters, 
                     FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=True)
   with tf.name_scope('Valid'):
     with tf.variable_scope('MTLModel', reuse=True):
       m_valid = models.MTLModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
-                    FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
+                    FLAGS.pos_num, FLAGS.pos_dim, 10,
                     1.0, FLAGS.filter_size, FLAGS.num_filters, 
                     FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=False)
   return m_train, m_valid

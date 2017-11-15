@@ -6,4 +6,4 @@ push/
 __pycache__/
 *.so
 *.tfrecords
-tmp/
+tmp*
