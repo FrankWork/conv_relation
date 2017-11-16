@@ -145,7 +145,7 @@ class MTLModel(BaseModel):
       # labels task==5  0, 1, 2, 2, 2, 2      3 class
       # labels task==7  2, 2, 0, 1, 2, 2      3 class
       # labels task==1  1, 1, 1, 1, 0, 0      2 class
-
+      
       # Map the features to 3 or 2 classes
       # FIXME only support 3 class
       logits, _ = linear_layer('linear_%d'%task, feature, feature_size, 3)
@@ -163,7 +163,19 @@ class MTLModel(BaseModel):
                                     labels = task_labels, 
                                     logits = logits))
       loss_task += entropy
+    # self.rid:       5, 5, 7, 7, 1, 1
+    # self.direction: 0, 1, 0, 1, 0, 0
+    
+    # probs  task==5  0, 0, 0, 0, 0, 0      prob for 0 label
+    # probs  task==5  1, 1, 1, 1, 1, 1      prob for 1 label
+    # probs  task==5  2, 2, 2, 2, 2, 2      prob for 2 label
 
+    # probs  task==7  0, 0, 0, 0, 0, 0      prob for 0 label
+    # probs  task==7  1, 1, 1, 1, 1, 1      prob for 1 label
+    # probs  task==7  2, 2, 2, 2, 2, 2      prob for 2 label
+
+    # probs  task==1  0, 0, 0, 0, 0, 0      prob for 0 label
+    # probs  task==1  1, 1, 1, 1, 1, 1      prob for 1 label
     probs_buf = tf.stack(probs_buf, axis=1) # (r, batch, 2) => (batch, r, 2)
     predicts = tf.argmax(probs_buf[:,:, 1] - probs_buf[:,:,0], axis=1, output_type=tf.int32)
 
