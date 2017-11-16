@@ -125,12 +125,12 @@ class MTLModel(BaseModel):
     probs_buf = []
     task_features = []
     loss_task = tf.constant(0, dtype=tf.float32)
-    for i in range(num_relations):
+    for task in range(num_relations):
       sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
       if is_train and keep_prob < 1:
         sent_pos = tf.nn.dropout(sent_pos, keep_prob)
 
-      cnn_out = cnn_forward_lite('cnn-%d'%i, sent_pos, max_len, num_filters)
+      cnn_out = cnn_forward_lite('cnn-%d'%task, sent_pos, max_len, num_filters)
       # feature 
       task_features.append(cnn_out)
       feature = tf.concat([cnn_out, shared, lexical], axis=1)
@@ -139,24 +139,29 @@ class MTLModel(BaseModel):
       if is_train and keep_prob < 1:
         feature = tf.nn.dropout(feature, keep_prob)
 
-      # Map the features to 3 classes
-      logits, _ = linear_layer('linear_%d'%i, feature, feature_size, 3)
+      # task labels: 0:(e1,e2), 1:(e2,e1), 2:(other);  or 0:true, 1:false
+      # self.rid:       5, 5, 7, 7, 1, 1
+      # self.direction: 0, 1, 0, 1, 0, 0
+      # labels task==5  0, 1, 2, 2, 2, 2      3 class
+      # labels task==7  2, 2, 0, 1, 2, 2      3 class
+      # labels task==1  1, 1, 1, 1, 0, 0      2 class
+
+      # Map the features to 3 or 2 classes
+      # FIXME only support 3 class
+      logits, _ = linear_layer('linear_%d'%task, feature, feature_size, 3)
 
       probs = tf.nn.softmax(logits)
       probs_buf.append(probs)
-
-      # TODO labels: 0:(e1,e2), 1:(e2,e1), 2:(other)
-      # self.rid:       5, 5, 7, 7, 1, 1
-      # self.direction: 0, 1, 0, 1, 0, 0
-      # labels i==5     0, 1, 2, 2, 2, 2      3 class
-      # labels i==7     2, 2, 0, 1, 2, 2      3 class
-      # labels i==1     1, 1, 1, 1, 0, 0      2 class
       
-      labels = tf.cast(tf.equal(self.rid, i), tf.int32) # (batch, 1)
-      labels = tf.one_hot(labels, 2)  # (batch, 2)
+      task_labels = tf.where(tf.equal(self.rid, task), 
+                          self.direction, 
+                          2*tf.ones(self.rid.shape.as_list(), dtype=tf.int32))
+      task_labels = tf.one_hot(task_labels, 3)  # (batch, 3)
       
       entropy = tf.reduce_mean(
-          tf.nn.softmax_cross_entropy_with_logits(labels=labels, logits=logits))
+                          tf.nn.softmax_cross_entropy_with_logits(
+                                    labels = task_labels, 
+                                    logits = logits))
       loss_task += entropy
 
     probs_buf = tf.stack(probs_buf, axis=1) # (r, batch, 2) => (batch, r, 2)
