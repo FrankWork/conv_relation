@@ -13,13 +13,13 @@ import models
 
 
 
-tf.app.flags.DEFINE_string("train_file", "data/train_nopos_ty=6.txt", "training file")
-tf.app.flags.DEFINE_string("test_file", "data/test_nopos_ty=6.txt", "Test file")
+tf.app.flags.DEFINE_string("train_file", "data/train.txt", "training file")
+tf.app.flags.DEFINE_string("test_file", "data/test.txt", "Test file")
 tf.app.flags.DEFINE_string("vocab_file", "data/vocab.txt", "vocab file, automantic generated")
 tf.app.flags.DEFINE_string("vocab_freq_file", "data/vocab_freq.txt", "vocab freqs file, automantic generated")
 tf.app.flags.DEFINE_string("word_embed_orig", "data/GoogleNews-vectors-negative300.bin", "google news word embeddding")
 tf.app.flags.DEFINE_string("word_embed_trim", "data/embed300.trim.npy", "trimmed google embedding")
-tf.app.flags.DEFINE_string("relations_file", "data/relations.txt", "relations file")
+tf.app.flags.DEFINE_string("relations_file", "data/relations_new.txt", "relations file")
 tf.app.flags.DEFINE_string("logdir", "saved_models/", "where to save the model")
 
 # tf.app.flags.DEFINE_integer("freq_threshold", None, "vocab frequency threshold to keep the word")
