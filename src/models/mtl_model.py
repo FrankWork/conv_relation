@@ -126,6 +126,7 @@ class MTLModel(BaseModel):
     probs_buf = []
     task_features = []
     loss_task = tf.constant(0, dtype=tf.float32)
+    loss_diff = tf.constant(0, dtype=tf.float32)
     for task in range(num_relations):
       sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
       if is_train and keep_prob < 1:
@@ -170,6 +171,11 @@ class MTLModel(BaseModel):
                                     labels = task_labels, 
                                     logits = logits))
       loss_task += entropy
+
+      loss_diff += tf.reduce_sum(
+                      tf.square(
+                        tf.matmul(cnn_out, shared, transpose_a=True)
+                      ))
     # self.rid:       5, 5, 7, 7, 1, O
     # self.direction: 0, 1, 0, 1, 0, 0
     
@@ -193,11 +199,13 @@ class MTLModel(BaseModel):
     accuracy = tf.reduce_mean(tf.cast(accuracy, tf.float32))
 
     # Orthogonality Constraints
-    task_features = tf.stack(task_features, axis=1) # (r, batch, hsize) => (batch, r, hsize)
-    shared = tf.expand_dims(shared, axis=2)# (batch, hsize, 1)
-    loss_diff = tf.reduce_sum(
-      tf.pow(tf.matmul(task_features, shared), 2)
-    )
+
+    # (r, batch, hsize) => (batch, r, hsize)
+    # task_features = tf.stack(task_features, axis=1) 
+    # shared = tf.expand_dims(shared, axis=2)# (batch, hsize, 1)
+    # loss_diff = tf.reduce_sum(
+    #   tf.pow(tf.matmul(task_features, shared), 2)
+    # )
 
     self.logits = logits
     self.prediction = predicts
