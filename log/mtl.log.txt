@@ -383,3 +383,20 @@ Epoch 50, loss -6.81, acc 0.95 0.7762, time 107.31
 Done training, best_step: 3680, best_acc: 0.7817
 duration: 5461
 accuracy: 0.7817
+
+$ with loss_adv = - xentropy, with loss_diff
+
+Epoch 1, loss 659204.12, acc 0.16 0.3110, time 99.15
+Epoch 2, loss 38123.54, acc 0.30 0.4678, time 109.95
+Epoch 3, loss 18923.18, acc 0.46 0.5536, time 122.69
+Epoch 4, loss 12480.29, acc 0.47 0.5977, time 166.18
+Epoch 5, loss 6264.82, acc 0.58 0.6062, time 106.48
+Epoch 6, loss 5440.25, acc 0.50 0.6231, time 106.71
+Epoch 7, loss 2624.34, acc 0.56 0.6305, time 109.10
+Epoch 8, loss 2066.32, acc 0.66 0.6408, time 107.65
+Epoch 9, loss 1941.84, acc 0.63 0.6537, time 107.21
+Epoch 10, loss 1893.21, acc 0.67 0.6481, time 115.70
+Epoch 11, loss 1149.96, acc 0.64 0.6544, time 107.38
+Epoch 12, loss 437.61, acc 0.65 0.6555, time 107.96
+Epoch 13, loss 740.23, acc 0.70 0.6618, time 107.76
+Epoch 14, loss 779.05, acc 0.71 0.6614, time 109.37

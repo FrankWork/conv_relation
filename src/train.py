@@ -75,8 +75,9 @@ def train(sess, m_train, m_valid, train_data, get_train_feed, test_feed):
       sys.stdout.flush()
     n += 1
   duration = time.time() - orig_begin_time
+  duration /= 3600
   print('Done training, best_step: %d, best_acc: %.4f' % (best_step, best))
-  print('duration: %d' % duration)
+  print('duration: %.2f hours' % duration)
 
 def test(sess, m_valid, feed):
   m_valid.restore(sess)
