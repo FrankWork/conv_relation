@@ -29,6 +29,7 @@ def _grl_op_grad(op, grad):
   """
   return [-grad]  # List of one Tensor, since we have one input
 
+FLAGS = tf.app.flags.FLAGS
 
 def cnn_forward_lite(name, sent_pos, max_len, num_filters, use_grl=False):
   with tf.variable_scope(name, reuse=None):
@@ -140,48 +141,56 @@ class MTLModel(BaseModel):
         feature = tf.nn.dropout(feature, keep_prob)
 
       # task labels: 0:(e1,e2), 1:(e2,e1), 2:(other);  or 0:true, 1:false
-      # self.rid:       5, 5, 7, 7, 1, 1
+      # self.rid:       5, 5, 7, 7, 1, O(Other)
       # self.direction: 0, 1, 0, 1, 0, 0
       # labels task==5  0, 1, 2, 2, 2, 2      3 class
       # labels task==7  2, 2, 0, 1, 2, 2      3 class
-      # labels task==1  1, 1, 1, 1, 0, 0      2 class
+      # labels task==O  1, 1, 1, 1, 0, 0      2 class
       
       # Map the features to 3 or 2 classes
-      # FIXME only support 3 class
-      logits, _ = linear_layer('linear_%d'%task, feature, feature_size, 3)
+      num_class = 3
+      if task == num_relations-1: # 'Other'
+        num_class = 2
+      logits, _ = linear_layer('linear_%d'%task, feature, feature_size, num_class)
 
       probs = tf.nn.softmax(logits)
+      # (batch,class) => (batch,class-1) dim 1, ignore last column
+      probs = probs[:, :-1] 
       probs_buf.append(probs)
       
+      other_mask = (num_class-1)*tf.ones_like(self.rid)
       task_labels = tf.where(tf.equal(self.rid, task), 
-                          self.direction, 
-                          2*tf.ones(self.rid.shape.as_list(), dtype=tf.int32))
-      task_labels = tf.one_hot(task_labels, 3)  # (batch, 3)
+                             self.direction, 
+                             other_mask)
+      task_labels = tf.one_hot(task_labels, num_class)  # (batch, num_class)
       
       entropy = tf.reduce_mean(
-                          tf.nn.softmax_cross_entropy_with_logits(
+                             tf.nn.softmax_cross_entropy_with_logits(
                                     labels = task_labels, 
                                     logits = logits))
       loss_task += entropy
-    # self.rid:       5, 5, 7, 7, 1, 1
+    # self.rid:       5, 5, 7, 7, 1, O
     # self.direction: 0, 1, 0, 1, 0, 0
     
     # probs  task==5  0, 0, 0, 0, 0, 0      prob for 0 label
     # probs  task==5  1, 1, 1, 1, 1, 1      prob for 1 label
-    # probs  task==5  2, 2, 2, 2, 2, 2      prob for 2 label
 
     # probs  task==7  0, 0, 0, 0, 0, 0      prob for 0 label
     # probs  task==7  1, 1, 1, 1, 1, 1      prob for 1 label
-    # probs  task==7  2, 2, 2, 2, 2, 2      prob for 2 label
 
-    # probs  task==1  0, 0, 0, 0, 0, 0      prob for 0 label
-    # probs  task==1  1, 1, 1, 1, 1, 1      prob for 1 label
-    probs_buf = tf.stack(probs_buf, axis=1) # (r, batch, 2) => (batch, r, 2)
-    predicts = tf.argmax(probs_buf[:,:, 1] - probs_buf[:,:,0], axis=1, output_type=tf.int32)
+    # probs  task==O  0, 0, 0, 0, 0, 0      prob for 0 label
+    
+    # len(probs_buf) == r_10, [ p1, p2, .., pr_10]
+    # p1.shape==(batch, 2), pr_10.shape==(batch, 1)
+    # probs_buf => [batch, r_19]
+    
+    probs_buf = tf.concat(probs_buf, axis=1) # (batch, r_19)
+    # FIXME biased
+    predicts = tf.argmax(probs_buf, axis=1, output_type=tf.int32) # (batch,)
 
-    accuracy = tf.equal(predicts, self.rid)
+    labels = 2 * self.rid + self.direction
+    accuracy = tf.equal(predicts, labels)
     accuracy = tf.reduce_mean(tf.cast(accuracy, tf.float32))
-
 
     # Orthogonality Constraints
     task_features = tf.stack(task_features, axis=1) # (r, batch, hsize) => (batch, r, hsize)
@@ -213,13 +222,13 @@ def build_train_valid_model(word_embed):
   '''Adversarial Multi-task Learning for Text Classification'''
   with tf.name_scope("Train"):
     with tf.variable_scope('MTLModel', reuse=None):
-      m_train = models.MTLModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
+      m_train = MTLModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
                     FLAGS.pos_num, FLAGS.pos_dim, 10,
                     FLAGS.keep_prob, FLAGS.filter_size, FLAGS.num_filters, 
                     FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=True)
   with tf.name_scope('Valid'):
     with tf.variable_scope('MTLModel', reuse=True):
-      m_valid = models.MTLModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
+      m_valid = MTLModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
                     FLAGS.pos_num, FLAGS.pos_dim, 10,
                     1.0, FLAGS.filter_size, FLAGS.num_filters, 
                     FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=False)

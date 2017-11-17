@@ -12,8 +12,8 @@ class BaseModel(object):
     '''
     # shared between train and valid model instance
     cls.saver = tf.train.Saver(var_list=None)
-    cls.save_dir = os.path.join(FLAGS.logdir, dir_name)
-    cls.save_path = os.path.join(save_dir, "model.ckpt")
+    cls.save_dir = os.path.join(FLAGS.logdir, save_dir)
+    cls.save_path = os.path.join(cls.save_dir, "model.ckpt")
 
   @classmethod
   def restore(cls, session):

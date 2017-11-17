@@ -9,7 +9,8 @@ import time
 import sys
 import tensorflow as tf
 from reader import base as base_reader
-import models
+from models import cnn_model
+from models import mtl_model
 
 
 
@@ -87,9 +88,9 @@ def main(_):
 
   with tf.Graph().as_default():
     if FLAGS.model == 'cnn':
-      m_train, m_valid = models.cnn_model.build_train_valid_model(word_embed)
+      m_train, m_valid = cnn_model.build_train_valid_model(word_embed)
     elif FLAGS.model == 'mtl':
-      m_train, m_valid = models.mtl_model.build_train_valid_model(word_embed)
+      m_train, m_valid = mtl_model.build_train_valid_model(word_embed)
     
     m_train.set_saver(FLAGS.model)
 
@@ -114,6 +115,7 @@ def main(_):
       }
       if FLAGS.model == 'mtl':
         batch_feed[m_train.direction] = batch_data['direction']
+      return batch_feed
     
     init_op = tf.group(tf.global_variables_initializer(),
                         tf.local_variables_initializer())# for file queue
