@@ -39,29 +39,29 @@ def cnn_forward_lite(name, sent_pos, max_len, num_filters, use_grl=False):
     input_dim = input.shape.as_list()[2]
 
     # convolutional layer
-    # pool_outputs = []
-    # filter_size = random.choice([1,2,3,4,5])
-    filter_size = 3
-    with tf.variable_scope('conv-%s' % filter_size):
-      conv_weight = tf.get_variable('W1', 
-                            [filter_size, input_dim, 1, num_filters], 
-                            initializer=tf.truncated_normal_initializer(stddev=0.1))
-      conv_bias = tf.get_variable('b1', [num_filters], 
-                            initializer=tf.constant_initializer(0.1))
-      if use_grl:
-        conv_weight = grl_module.grl_op(conv_weight)
-        conv_bias = grl_module.grl_op(conv_bias)
-      conv = tf.nn.conv2d(input,
-                          conv_weight,
-                          strides=[1, 1, input_dim, 1],
-                          padding='SAME')
-      # Batch normalization here
-      conv = tf.nn.relu(conv + conv_bias) # batch_size, max_len, 1, num_filters
-      pool = tf.nn.max_pool(conv, ksize= [1, max_len, 1, 1], 
-                            strides=[1, max_len, 1, 1], padding='SAME') # batch_size, 1, 1, num_filters
-      # pool_outputs.append(pool)
-    # pools = tf.reshape(tf.concat(pool_outputs, 3), [-1, 3*num_filters])
-    pools = tf.reshape(pool, [-1, num_filters])
+    pool_outputs = []
+    for filter_size in [3, 4, 5]:
+    # filter_size = 3
+      with tf.variable_scope('conv-%s' % filter_size):
+        conv_weight = tf.get_variable('W1', 
+                              [filter_size, input_dim, 1, num_filters], 
+                              initializer=tf.truncated_normal_initializer(stddev=0.1))
+        conv_bias = tf.get_variable('b1', [num_filters], 
+                              initializer=tf.constant_initializer(0.1))
+        if use_grl:
+          conv_weight = grl_module.grl_op(conv_weight)
+          conv_bias = grl_module.grl_op(conv_bias)
+        conv = tf.nn.conv2d(input,
+                            conv_weight,
+                            strides=[1, 1, input_dim, 1],
+                            padding='SAME')
+        # Batch normalization here
+        conv = tf.nn.relu(conv + conv_bias) # batch_size, max_len, 1, num_filters
+        pool = tf.nn.max_pool(conv, ksize= [1, max_len, 1, 1], 
+                              strides=[1, max_len, 1, 1], padding='SAME') # batch_size, 1, 1, num_filters
+        pool_outputs.append(pool)
+    pools = tf.reshape(tf.concat(pool_outputs, 3), [-1, 3*num_filters])
+    # pools = tf.reshape(pool, [-1, num_filters])
 
     return pools
 
@@ -211,7 +211,7 @@ class MTLModel(BaseModel):
     self.prediction = predicts
     self.accuracy = accuracy
     # self.loss = loss_task + 0.05*loss_adv + 0.01*loss_diff
-    self.loss = loss_task + loss_adv + loss_diff# 
+    self.loss = loss_task + loss_adv #+ 0.001*loss_diff# 
 
     if not is_train:
       return 

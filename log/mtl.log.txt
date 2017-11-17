@@ -400,3 +400,8 @@ Epoch 11, loss 1149.96, acc 0.64 0.6544, time 107.38
 Epoch 12, loss 437.61, acc 0.65 0.6555, time 107.96
 Epoch 13, loss 740.23, acc 0.70 0.6618, time 107.76
 Epoch 14, loss 779.05, acc 0.71 0.6614, time 109.37
+
+
+cnn: 0.7766
+mtl: 0.7781
+mtl+adv: 0.7817 (+0.51% than cnn)
