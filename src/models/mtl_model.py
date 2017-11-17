@@ -72,7 +72,7 @@ def adversarial_loss(feature, relation, is_train, keep_prob):
   # Map the features to 19 classes
   out_size = relation.shape.as_list()[1]
   logits, _ = linear_layer('linear_adv', feature, feature_size, out_size)
-  loss_adv = tf.reduce_mean(
+  loss_adv = -tf.reduce_mean(
       tf.nn.softmax_cross_entropy_with_logits(labels=relation, logits=logits))
   return loss_adv
 
