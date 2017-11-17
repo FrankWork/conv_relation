@@ -17,35 +17,7 @@ MTL_Label = namedtuple('MTL_Label', 'relation direction')
 
 FLAGS = tf.app.flags.FLAGS # load FLAGS.word_dim
 
-def load_mtl_label(relations_file):
-  label2segment = dict() # {0:  [Component-Whole, (e2,e1)], ... }
-  relation_set = set()   # (Component-Whole, ...)
-  with open(relations_file) as f:
-    for line in f:
-      label, relation_str = line.strip().split()
-      label = int(label)
-      segment = relation_str.split(':')
-      label2segment[label] = segment
-      relation_set.add(segment[0])
-  relation_set = sorted(list(relation_set))
-  relation2id = dict() # {Cause-Effect: 0, ...}
-  for i, rel in enumerate(relation_set):
-    relation2id[rel] = i
-  
-  # {label: (relation, direction)}
-  # label is relation with direction
-  label2mtl = dict() 
-  for label, segment in label2segment.items():
-    relation = relation2id[segment[0]]
-    if len(segment)==2 and segment[1]=='(e2,e1)':
-      direction = 1
-    else:
-      direction = 0 # 'Other' relation has no direction
-    label2mtl[label] = MTL_Label(relation, direction)
-
-  return label2mtl
-
-def load_raw_data(filename, label2mtl=None,  max_len=None):
+def load_raw_data(filename, mtl_mode=False,  max_len=None):
   '''load raw data from text file, 
   and convert word to lower case, 
   and replace digits with 0s;
@@ -66,8 +38,10 @@ def load_raw_data(filename, label2mtl=None,  max_len=None):
       sent = [re.sub("\d+", "0", w) for w in sent]
 
       label = int(words[0])
-      if label2mtl:
-        label = label2mtl[label]
+      if mtl_mode:
+        # label = 0,      1,      2,     3
+        # mtl_  = (0, 0)  (0, 1)  (1, 0) (1, 1)       
+        label = MTL_Label(label//2, label%2)
 
       entity1 = PositionPair(int(words[1]), int(words[2]))
       entity2 = PositionPair(int(words[3]), int(words[4]))
@@ -238,12 +212,8 @@ def gen_batch_data(data, num_epoches, batch_size, shuffle=True):
 
 
 def inputs(mtl_mode=False):
-  label2mtl = None
-  if mtl_mode:
-    label2mtl = load_mtl_label(FLAGS.relations_file)
-
-  raw_train_data = load_raw_data(FLAGS.train_file, label2mtl, FLAGS.max_len)
-  raw_test_data = load_raw_data(FLAGS.test_file, label2mtl, FLAGS.max_len)
+  raw_train_data = load_raw_data(FLAGS.train_file, mtl_mode, FLAGS.max_len)
+  raw_test_data = load_raw_data(FLAGS.test_file, mtl_mode, FLAGS.max_len)
 
   word2id, id2word = build_vocab(raw_train_data, 
                                  raw_test_data, 
