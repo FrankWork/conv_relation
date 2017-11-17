@@ -135,6 +135,7 @@ class MTLModel(BaseModel):
       # feature 
       task_features.append(cnn_out)
       feature = tf.concat([cnn_out, shared, lexical], axis=1)
+      # feature = tf.concat([cnn_out, lexical], axis=1)
       feature_size = feature.shape.as_list()[1]
 
       if is_train and keep_prob < 1:
@@ -185,7 +186,6 @@ class MTLModel(BaseModel):
     # probs_buf => [batch, r_19]
     
     probs_buf = tf.concat(probs_buf, axis=1) # (batch, r_19)
-    # FIXME biased
     predicts = tf.argmax(probs_buf, axis=1, output_type=tf.int32) # (batch,)
 
     labels = 2 * self.rid + self.direction
@@ -203,7 +203,7 @@ class MTLModel(BaseModel):
     self.prediction = predicts
     self.accuracy = accuracy
     # self.loss = loss_task + 0.05*loss_adv + 0.01*loss_diff
-    self.loss = loss_task + loss_adv + loss_diff
+    self.loss = loss_task + loss_adv# + loss_diff# 
 
     if not is_train:
       return 
