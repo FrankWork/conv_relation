@@ -31,7 +31,7 @@ def cnn_forward(name, sent_pos, lexical, max_len, num_filters):
 
     # convolutional layer
     pool_outputs = []
-    for filter_size in [3, 4, 5]:
+    for filter_size in [1, 3, 7]:
       with tf.variable_scope('conv-%s' % filter_size):
         conv_weight = tf.get_variable('W1', 
                               [filter_size, input_dim, 1, num_filters], 
