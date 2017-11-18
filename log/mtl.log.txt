@@ -402,6 +402,68 @@ Epoch 13, loss 740.23, acc 0.70 0.6618, time 107.76
 Epoch 14, loss 779.05, acc 0.71 0.6614, time 109.37
 
 
+$ with loss_adv = - xentropy, with 3 cnn
+
+21897 words
+2446 zero vectors.
+================================================================================
+Epoch 1, loss -14.59, acc 0.26 0.4211, time 322.70
+Epoch 2, loss 0.28, acc 0.35 0.5539, time 360.91
+Epoch 3, loss 0.26, acc 0.54 0.6169, time 364.93
+Epoch 4, loss -0.06, acc 0.54 0.6448, time 361.21
+Epoch 5, loss -0.21, acc 0.60 0.6849, time 362.96
+Epoch 6, loss -0.61, acc 0.67 0.6934, time 366.24
+Epoch 7, loss -0.57, acc 0.69 0.7089, time 363.41
+Epoch 8, loss -0.76, acc 0.65 0.7214, time 363.40
+Epoch 9, loss -1.03, acc 0.74 0.7137, time 362.78
+Epoch 10, loss -1.24, acc 0.77 0.7269, time 361.90
+Epoch 11, loss -1.32, acc 0.85 0.7324, time 361.76
+Epoch 12, loss -1.26, acc 0.74 0.7398, time 363.11
+Epoch 13, loss -1.51, acc 0.82 0.7391, time 362.38
+Epoch 14, loss -1.43, acc 0.79 0.7449, time 362.36
+Epoch 15, loss -1.48, acc 0.77 0.7438, time 366.74
+Epoch 16, loss -1.80, acc 0.85 0.7464, time 360.88
+Epoch 17, loss -2.03, acc 0.82 0.7530, time 361.49
+Epoch 18, loss -1.93, acc 0.86 0.7545, time 361.67
+Epoch 19, loss -2.16, acc 0.88 0.7505, time 361.87
+Epoch 20, loss -2.41, acc 0.87 0.7516, time 361.22
+Epoch 21, loss -2.54, acc 0.85 0.7552, time 360.70
+Epoch 22, loss -2.83, acc 0.89 0.7611, time 366.21
+Epoch 23, loss -2.84, acc 0.90 0.7600, time 362.08
+Epoch 24, loss -3.19, acc 0.92 0.7648, time 360.85
+Epoch 25, loss -3.14, acc 0.91 0.7689, time 362.05
+Epoch 26, loss -3.28, acc 0.91 0.7681, time 361.97
+Epoch 27, loss -3.47, acc 0.94 0.7678, time 361.05
+Epoch 28, loss -3.73, acc 0.97 0.7729, time 361.35
+Epoch 29, loss -3.65, acc 0.94 0.7663, time 361.96
+Epoch 30, loss -3.99, acc 0.96 0.7707, time 361.02
+Epoch 31, loss -3.98, acc 0.92 0.7681, time 361.13
+Epoch 32, loss -4.53, acc 0.92 0.7659, time 360.62
+Epoch 33, loss -4.48, acc 0.96 0.7707, time 360.55
+Epoch 34, loss -4.63, acc 0.96 0.7729, time 364.98
+Epoch 35, loss -4.82, acc 0.98 0.7674, time 360.45
+Epoch 36, loss -5.10, acc 0.98 0.7744, time 360.89
+Epoch 37, loss -5.16, acc 0.95 0.7725, time 363.81
+Epoch 38, loss -5.28, acc 0.96 0.7725, time 360.63
+Epoch 39, loss -5.15, acc 0.98 0.7714, time 360.62
+Epoch 40, loss -5.91, acc 0.99 0.7707, time 360.60
+Epoch 41, loss -5.50, acc 0.98 0.7692, time 361.20
+Epoch 42, loss -6.09, acc 0.95 0.7729, time 360.88
+Epoch 43, loss -6.63, acc 0.98 0.7729, time 360.84
+Epoch 44, loss -6.91, acc 0.97 0.7748, time 360.57
+Epoch 45, loss -6.56, acc 0.95 0.7725, time 362.06
+Epoch 46, loss -6.73, acc 0.98 0.7733, time 361.31
+Epoch 47, loss -6.53, acc 0.98 0.7773, time 361.12
+Epoch 48, loss -7.04, acc 1.00 0.7703, time 361.09
+Epoch 49, loss -6.89, acc 0.98 0.7762, time 360.92
+Epoch 50, loss -7.49, acc 1.00 0.7736, time 360.53
+Done training, best_step: 3760, best_acc: 0.7773
+duration: 5.03 hours
+accuracy: 0.7773
+
+
+
+
 cnn: 0.7766
 mtl: 0.7781
 mtl+adv: 0.7817 (+0.51% than cnn)
