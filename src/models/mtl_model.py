@@ -70,7 +70,7 @@ def adversarial_loss(feature, relation, is_train, keep_prob):
   feature_size = feature.shape.as_list()[1]
   if is_train and keep_prob < 1:
       feature = tf.nn.dropout(feature, keep_prob)
-  # Map the features to 19 classes
+  # Map the features to 10 classes
   out_size = relation.shape.as_list()[1]
   logits, _ = linear_layer('linear_adv', feature, feature_size, out_size)
   loss_adv = -tf.reduce_mean(
@@ -212,7 +212,7 @@ class MTLModel(BaseModel):
     self.prediction = predicts
     self.accuracy = accuracy
     # self.loss = loss_task + 0.05*loss_adv + 0.01*loss_diff
-    self.loss = loss_task + loss_adv #+ 0.001*loss_diff# 
+    self.loss = loss_task + 0.005*loss_adv #+ 0.001*loss_diff# 
 
     if not is_train:
       return 

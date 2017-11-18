@@ -151,6 +151,12 @@ Done training, best_step: 3280, best_acc: 0.7766
 duration: 1799
 accuracy: 0.7766
 
+$ filter size [1,3,7]
+
+Epoch 50, loss 0.31, acc 0.91 0.7740, time 31.68
+Done training, best_step: 4000, best_acc: 0.7740
+duration: 0.44 hours
+accuracy: 0.7740
 
 
 max_len=97: 0.7600
