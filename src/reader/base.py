@@ -247,4 +247,4 @@ def write_results(predictions, relations_file, results_file):
   with open(results_file, 'w') as f:
     for idx, id in enumerate(predictions):
       rel = relations[id]
-      f.write('%d %s\n' % (start_no+idx, rel))
+      f.write('%d\t%s\n' % (start_no+idx, rel))
