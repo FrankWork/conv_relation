@@ -212,7 +212,7 @@ class MTLModel(BaseModel):
     self.prediction = predicts
     self.accuracy = accuracy
     # self.loss = loss_task + 0.05*loss_adv + 0.01*loss_diff
-    self.loss = loss_task + 0.005*loss_adv #+ 0.001*loss_diff# 
+    self.loss = loss_task + 0.00005*loss_adv #+ 0.001*loss_diff# 
 
     if not is_train:
       return 

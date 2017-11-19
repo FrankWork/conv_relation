@@ -641,3 +641,5 @@ mtl+3cnn: 0.7828
 mtl+3cnn+adv: 0.7773
 mtl+3cnn+0.005adv: 0.7810
 mtl+3cnn+0.0005*adv: 0.7825
+mtl+3cnn+0.00005*adv: 
+mtl+3cnn+0.00001*adv: 0.7817
