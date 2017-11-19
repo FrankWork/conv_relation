@@ -235,3 +235,16 @@ def inputs(mtl_mode=False):
   test_data = test_data.__next__()
 
   return train_data, test_data, word_embed
+
+def write_results(predictions, relations_file, results_file):
+  relations = []
+  with open(relations) as f:
+    for line in f:
+      segment = line.strip.split()
+      relations.append(segment[0])
+  
+  start_no = 8001
+  with open(results_file, 'w') as f:
+    for idx, id in enumerate(predictions):
+      rel = relations[id]
+      f.write('%d %s\n' % (start_no+idx, rel))

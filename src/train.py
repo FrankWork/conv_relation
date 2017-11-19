@@ -21,6 +21,7 @@ tf.app.flags.DEFINE_string("vocab_freq_file", "data/vocab_freq.txt", "vocab freq
 tf.app.flags.DEFINE_string("word_embed_orig", "data/GoogleNews-vectors-negative300.bin", "google news word embeddding")
 tf.app.flags.DEFINE_string("word_embed_trim", "data/embed300.trim.npy", "trimmed google embedding")
 tf.app.flags.DEFINE_string("relations_file", "data/relations_new.txt", "relations file")
+tf.app.flags.DEFINE_string("results_file", "data/results.txt", "predicted results file")
 tf.app.flags.DEFINE_string("logdir", "saved_models/", "where to save the model")
 
 # tf.app.flags.DEFINE_integer("freq_threshold", None, "vocab frequency threshold to keep the word")
@@ -81,8 +82,12 @@ def train(sess, m_train, m_valid, train_data, get_train_feed, test_feed):
 
 def test(sess, m_valid, feed):
   m_valid.restore(sess)
-  accuracy = sess.run(m_valid.accuracy, feed)
+  fetches = [m_valid.accuracy, m_valid.prediction]
+  accuracy, predictions = sess.run(fetches, feed)
   print('accuracy: %.4f' % accuracy)
+  
+  base_reader.write_results(predictions, FLAGS.relations_file, FLAGS.results_file)
+
 
 def main(_):
   train_data, test_data, word_embed = base_reader.inputs(FLAGS.model=='mtl')

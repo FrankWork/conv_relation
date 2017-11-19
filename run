@@ -1,4 +1,4 @@
 #! /bin/bash
-# python src/train.py --model=cnn
-python src/train.py --model=mtl
+python src/train.py --model=cnn --num_epochs=200
+# python src/train.py --model=mtl
 
