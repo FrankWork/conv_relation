@@ -3,7 +3,7 @@ import tensorflow as tf
 FLAGS = tf.app.flags.FLAGS
 
 class BaseModel(object):
-  
+
   @classmethod
   def set_saver(cls, save_dir):
     '''
@@ -23,3 +23,4 @@ class BaseModel(object):
   @classmethod
   def save(cls, session, global_step):
     cls.saver.save(session, cls.save_path, global_step)
+  
