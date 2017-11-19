@@ -56,7 +56,8 @@ class CNNModel(BaseModel):
     logits, _ = linear_layer('linear_cnn', feature, feature_size, num_relations)
 
     prediction = tf.nn.softmax(logits)
-    accuracy = tf.equal(tf.argmax(prediction, axis=1), tf.argmax(relation, axis=1))
+    prediction = tf.argmax(prediction, axis=1)
+    accuracy = tf.equal(prediction, tf.argmax(relation, axis=1))
     accuracy = tf.reduce_mean(tf.cast(accuracy, tf.float32))
     loss_ce = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(labels=relation, logits=logits))

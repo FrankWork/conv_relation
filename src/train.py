@@ -100,7 +100,6 @@ def main(_):
     
     m_train.set_saver(FLAGS.model)
 
-    # TODO mtl_input
     test_feed = {
           m_valid.sent_id : test_data['sent_id'],
           m_valid.pos1_id : test_data['pos1_id'],

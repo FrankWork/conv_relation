@@ -238,10 +238,10 @@ def inputs(mtl_mode=False):
 
 def write_results(predictions, relations_file, results_file):
   relations = []
-  with open(relations) as f:
+  with open(relations_file) as f:
     for line in f:
-      segment = line.strip.split()
-      relations.append(segment[0])
+      segment = line.strip().split()
+      relations.append(segment[1])
   
   start_no = 8001
   with open(results_file, 'w') as f:
