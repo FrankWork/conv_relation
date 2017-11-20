@@ -56,7 +56,7 @@ def cnn_forward_lite(name, sent_pos, max_len, num_filters, use_grl=False):
                             strides=[1, 1, input_dim, 1],
                             padding='SAME')
         # Batch normalization here
-        # conv = tf.layers.batch_normalization(conv)
+        conv = tf.layers.batch_normalization(conv)
         conv = tf.nn.relu(conv + conv_bias) # batch_size, max_len, 1, num_filters
         pool = tf.nn.max_pool(conv, ksize= [1, max_len, 1, 1], 
                               strides=[1, max_len, 1, 1], padding='SAME') # batch_size, 1, 1, num_filters
