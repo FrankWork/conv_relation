@@ -633,7 +633,210 @@ duration: 2.95 hours
 accuracy: 0.7836
 
 
-# 50 Epoch
+
+Epoch 1, loss 6.52, acc 0.19 0.3673, time 193.62
+Epoch 2, loss 5.68, acc 0.27 0.5009, time 213.80
+Epoch 3, loss 4.11, acc 0.35 0.5767, time 213.79
+Epoch 4, loss 3.72, acc 0.46 0.6043, time 213.65
+Epoch 5, loss 3.20, acc 0.48 0.6754, time 212.97
+Epoch 6, loss 2.83, acc 0.53 0.6783, time 213.78
+Epoch 7, loss 2.45, acc 0.62 0.6934, time 214.05
+Epoch 8, loss 1.75, acc 0.67 0.7111, time 214.56
+Epoch 9, loss 1.80, acc 0.72 0.7037, time 213.67
+Epoch 10, loss 1.61, acc 0.69 0.7236, time 212.01
+Epoch 11, loss 1.68, acc 0.66 0.7240, time 213.71
+Epoch 12, loss 1.31, acc 0.72 0.7449, time 214.11
+Epoch 13, loss 1.07, acc 0.82 0.7438, time 214.05
+Epoch 14, loss 1.32, acc 0.81 0.7446, time 212.27
+Epoch 15, loss 1.16, acc 0.82 0.7519, time 211.71
+Epoch 16, loss 1.15, acc 0.81 0.7597, time 213.94
+Epoch 17, loss 1.05, acc 0.80 0.7556, time 213.87
+Epoch 18, loss 1.06, acc 0.83 0.7571, time 211.66
+Epoch 19, loss 0.89, acc 0.87 0.7556, time 211.71
+Epoch 20, loss 0.86, acc 0.86 0.7545, time 211.78
+Epoch 21, loss 0.73, acc 0.86 0.7567, time 211.54
+Epoch 22, loss 0.67, acc 0.91 0.7545, time 212.46
+Epoch 23, loss 0.62, acc 0.91 0.7667, time 211.89
+Epoch 24, loss 0.93, acc 0.82 0.7626, time 214.35
+Epoch 25, loss 0.79, acc 0.87 0.7718, time 212.11
+Epoch 26, loss 0.63, acc 0.89 0.7718, time 213.59
+Epoch 27, loss 0.55, acc 0.93 0.7718, time 212.20
+Epoch 28, loss 0.73, acc 0.85 0.7678, time 211.98
+Epoch 29, loss 0.76, acc 0.88 0.7667, time 212.24
+Epoch 30, loss 0.45, acc 0.93 0.7692, time 211.73
+Epoch 31, loss 0.31, acc 0.97 0.7689, time 212.45
+Epoch 32, loss 0.30, acc 0.96 0.7781, time 212.29
+Epoch 33, loss 0.49, acc 0.89 0.7714, time 213.86
+Epoch 34, loss 0.37, acc 0.94 0.7707, time 212.55
+Epoch 35, loss 0.44, acc 0.94 0.7770, time 211.74
+Epoch 36, loss 0.40, acc 0.95 0.7714, time 212.51
+Epoch 37, loss 0.23, acc 0.95 0.7759, time 212.22
+Epoch 38, loss 0.36, acc 0.95 0.7806, time 212.58
+Epoch 39, loss 0.33, acc 0.94 0.7736, time 214.31
+Epoch 40, loss 0.19, acc 0.97 0.7784, time 212.16
+Epoch 41, loss 0.29, acc 0.97 0.7814, time 212.08
+Epoch 42, loss 0.24, acc 0.99 0.7770, time 213.99
+Epoch 43, loss 0.09, acc 0.98 0.7744, time 212.04
+Epoch 44, loss 0.17, acc 0.98 0.7795, time 211.90
+Epoch 45, loss 0.22, acc 0.96 0.7755, time 211.85
+Epoch 46, loss 0.13, acc 1.00 0.7736, time 212.08
+Epoch 47, loss 0.20, acc 0.98 0.7792, time 212.28
+Epoch 48, loss 0.20, acc 0.99 0.7733, time 211.65
+Epoch 49, loss 0.17, acc 0.99 0.7792, time 211.70
+Epoch 50, loss 0.06, acc 1.00 0.7744, time 212.34
+Epoch 51, loss 0.19, acc 0.98 0.7744, time 212.70
+Epoch 52, loss 0.26, acc 0.99 0.7748, time 212.66
+Epoch 53, loss 0.17, acc 1.00 0.7817, time 212.69
+Epoch 54, loss 0.14, acc 1.00 0.7795, time 213.32
+Epoch 55, loss 0.26, acc 1.00 0.7777, time 217.67
+Epoch 56, loss 0.20, acc 0.99 0.7770, time 215.51
+Epoch 57, loss 0.41, acc 0.96 0.7755, time 212.47
+Epoch 58, loss 0.26, acc 0.99 0.7773, time 211.94
+Epoch 59, loss 0.21, acc 0.98 0.7770, time 211.78
+Epoch 60, loss 0.23, acc 0.98 0.7784, time 212.46
+Epoch 61, loss 0.46, acc 0.94 0.7770, time 217.18
+Epoch 62, loss 0.25, acc 0.98 0.7788, time 212.15
+Epoch 63, loss 0.35, acc 0.98 0.7810, time 211.99
+Epoch 64, loss 0.21, acc 0.98 0.7814, time 212.73
+Epoch 65, loss 0.22, acc 1.00 0.7777, time 212.12
+Epoch 66, loss 0.25, acc 0.97 0.7718, time 211.60
+Epoch 67, loss 0.23, acc 1.00 0.7744, time 211.79
+Epoch 68, loss 0.26, acc 1.00 0.7788, time 211.90
+Epoch 69, loss 0.24, acc 0.99 0.7770, time 211.57
+Epoch 70, loss 0.16, acc 1.00 0.7795, time 211.98
+Epoch 71, loss 0.29, acc 0.98 0.7854, time 212.12
+Epoch 72, loss 0.28, acc 1.00 0.7832, time 213.85
+Epoch 73, loss 0.21, acc 0.99 0.7810, time 211.50
+Epoch 74, loss 0.13, acc 1.00 0.7803, time 212.78
+Epoch 75, loss 0.17, acc 1.00 0.7806, time 212.81
+Epoch 76, loss 0.17, acc 1.00 0.7806, time 212.45
+Epoch 77, loss 0.26, acc 0.99 0.7781, time 212.27
+Epoch 78, loss 0.17, acc 1.00 0.7792, time 212.34
+Epoch 79, loss 0.34, acc 0.99 0.7803, time 211.95
+Epoch 80, loss 0.25, acc 1.00 0.7836, time 212.29
+Epoch 81, loss 0.20, acc 0.99 0.7825, time 211.95
+Epoch 82, loss 0.18, acc 1.00 0.7777, time 211.66
+Epoch 83, loss 0.15, acc 1.00 0.7759, time 212.37
+Epoch 84, loss 0.21, acc 1.00 0.7814, time 212.02
+Epoch 85, loss 0.14, acc 1.00 0.7799, time 212.37
+Epoch 86, loss 0.11, acc 1.00 0.7799, time 211.65
+Epoch 87, loss 0.15, acc 1.00 0.7792, time 211.61
+Epoch 88, loss 0.12, acc 0.99 0.7817, time 212.05
+Epoch 89, loss 0.19, acc 1.00 0.7814, time 211.40
+Epoch 90, loss 0.19, acc 1.00 0.7792, time 212.48
+Epoch 91, loss 0.16, acc 0.98 0.7803, time 212.65
+Epoch 92, loss 0.27, acc 0.97 0.7784, time 212.37
+Epoch 93, loss 0.15, acc 0.99 0.7788, time 212.57
+Epoch 94, loss 0.15, acc 1.00 0.7784, time 211.77
+Epoch 95, loss 0.15, acc 1.00 0.7770, time 211.55
+Epoch 96, loss 0.11, acc 1.00 0.7788, time 211.67
+Epoch 97, loss 0.28, acc 0.98 0.7773, time 212.32
+Epoch 98, loss 0.06, acc 1.00 0.7748, time 211.55
+Epoch 99, loss 0.13, acc 1.00 0.7762, time 212.02
+Epoch 100, loss 0.17, acc 1.00 0.7792, time 211.79
+Epoch 101, loss 0.18, acc 0.99 0.7828, time 211.97
+Epoch 102, loss 0.14, acc 1.00 0.7795, time 212.36
+Epoch 103, loss 0.15, acc 1.00 0.7825, time 211.79
+Epoch 104, loss 0.14, acc 0.99 0.7810, time 212.37
+Epoch 105, loss 0.18, acc 1.00 0.7825, time 212.15
+Epoch 106, loss 0.15, acc 1.00 0.7788, time 211.40
+Epoch 107, loss 0.08, acc 1.00 0.7751, time 212.32
+Epoch 108, loss 0.26, acc 0.99 0.7810, time 212.55
+Epoch 109, loss 0.17, acc 0.99 0.7781, time 212.11
+Epoch 110, loss 0.11, acc 1.00 0.7814, time 212.38
+Epoch 111, loss 0.14, acc 0.99 0.7836, time 212.33
+Epoch 112, loss 0.13, acc 0.99 0.7858, time 212.14
+Epoch 113, loss 0.15, acc 0.98 0.7810, time 213.56
+Epoch 114, loss 0.09, acc 1.00 0.7795, time 212.70
+Epoch 115, loss 0.08, acc 1.00 0.7840, time 211.89
+Epoch 116, loss 0.08, acc 1.00 0.7817, time 211.64
+Epoch 117, loss 0.14, acc 1.00 0.7836, time 211.76
+Epoch 118, loss 0.10, acc 1.00 0.7803, time 212.12
+Epoch 119, loss 0.13, acc 1.00 0.7854, time 211.91
+Epoch 120, loss 0.18, acc 0.99 0.7843, time 212.51
+Epoch 121, loss 0.08, acc 1.00 0.7781, time 211.55
+Epoch 122, loss 0.11, acc 1.00 0.7810, time 212.07
+Epoch 123, loss 0.09, acc 1.00 0.7799, time 211.83
+Epoch 124, loss 0.08, acc 1.00 0.7832, time 212.12
+Epoch 125, loss 0.11, acc 1.00 0.7792, time 212.68
+Epoch 126, loss 0.14, acc 1.00 0.7795, time 212.12
+Epoch 127, loss 0.13, acc 1.00 0.7862, time 211.81
+Epoch 128, loss 0.10, acc 0.99 0.7825, time 213.26
+Epoch 129, loss 0.15, acc 1.00 0.7770, time 212.61
+Epoch 130, loss 0.09, acc 1.00 0.7795, time 212.43
+Epoch 131, loss 0.05, acc 1.00 0.7825, time 212.23
+Epoch 132, loss 0.10, acc 1.00 0.7821, time 211.48
+Epoch 133, loss 0.21, acc 0.99 0.7817, time 211.90
+Epoch 134, loss 0.14, acc 0.99 0.7740, time 212.03
+Epoch 135, loss 0.15, acc 0.99 0.7751, time 212.19
+Epoch 136, loss 0.08, acc 1.00 0.7792, time 211.38
+Epoch 137, loss 0.07, acc 1.00 0.7836, time 211.74
+Epoch 138, loss 0.16, acc 0.99 0.7869, time 212.17
+Epoch 139, loss 0.16, acc 0.99 0.7814, time 213.46
+Epoch 140, loss 0.15, acc 0.99 0.7795, time 211.60
+Epoch 141, loss 0.10, acc 0.99 0.7847, time 212.32
+Epoch 142, loss 0.07, acc 1.00 0.7840, time 211.70
+Epoch 143, loss 0.08, acc 1.00 0.7865, time 212.48
+Epoch 144, loss 0.07, acc 1.00 0.7836, time 212.04
+Epoch 145, loss 0.19, acc 0.99 0.7825, time 212.55
+Epoch 146, loss 0.13, acc 0.99 0.7858, time 212.33
+Epoch 147, loss 0.03, acc 1.00 0.7781, time 212.04
+Epoch 148, loss 0.11, acc 1.00 0.7795, time 212.43
+Epoch 149, loss 0.15, acc 0.99 0.7799, time 212.06
+Epoch 150, loss 0.07, acc 1.00 0.7788, time 212.58
+Epoch 151, loss 0.17, acc 0.98 0.7799, time 211.89
+Epoch 152, loss 0.13, acc 1.00 0.7799, time 211.78
+Epoch 153, loss 0.04, acc 1.00 0.7751, time 213.15
+Epoch 154, loss 0.13, acc 1.00 0.7766, time 211.84
+Epoch 155, loss 0.12, acc 1.00 0.7803, time 212.34
+Epoch 156, loss 0.18, acc 0.98 0.7795, time 211.73
+Epoch 157, loss 0.18, acc 1.00 0.7792, time 211.75
+Epoch 158, loss 0.05, acc 1.00 0.7795, time 211.70
+Epoch 159, loss 0.12, acc 1.00 0.7748, time 211.55
+Epoch 160, loss 0.06, acc 1.00 0.7784, time 211.95
+Epoch 161, loss 0.12, acc 1.00 0.7836, time 212.13
+Epoch 162, loss 0.12, acc 1.00 0.7836, time 211.84
+Epoch 163, loss 0.09, acc 1.00 0.7847, time 211.69
+Epoch 164, loss 0.14, acc 0.99 0.7788, time 212.12
+Epoch 165, loss 0.15, acc 0.99 0.7836, time 212.05
+Epoch 166, loss 0.13, acc 1.00 0.7814, time 211.65
+Epoch 167, loss 0.08, acc 1.00 0.7803, time 212.17
+Epoch 168, loss 0.16, acc 1.00 0.7854, time 211.43
+Epoch 169, loss 0.10, acc 0.98 0.7821, time 212.14
+Epoch 170, loss 0.13, acc 0.99 0.7828, time 212.00
+Epoch 171, loss 0.09, acc 1.00 0.7817, time 212.41
+Epoch 172, loss 0.12, acc 0.98 0.7821, time 211.79
+Epoch 173, loss 0.20, acc 1.00 0.7799, time 212.37
+Epoch 174, loss 0.10, acc 0.99 0.7810, time 212.24
+Epoch 175, loss 0.09, acc 1.00 0.7722, time 211.99
+Epoch 176, loss 0.04, acc 1.00 0.7773, time 212.59
+Epoch 177, loss 0.18, acc 1.00 0.7784, time 211.64
+Epoch 178, loss 0.08, acc 1.00 0.7788, time 213.27
+Epoch 179, loss 0.05, acc 1.00 0.7795, time 213.23
+Epoch 180, loss 0.07, acc 1.00 0.7792, time 211.88
+Epoch 181, loss 0.08, acc 1.00 0.7781, time 211.80
+Epoch 182, loss 0.09, acc 1.00 0.7766, time 211.90
+Epoch 183, loss 0.06, acc 1.00 0.7788, time 212.24
+Epoch 184, loss 0.03, acc 1.00 0.7803, time 212.39
+Epoch 185, loss 0.21, acc 0.98 0.7762, time 212.61
+Epoch 186, loss 0.06, acc 1.00 0.7777, time 212.22
+Epoch 187, loss 0.07, acc 0.99 0.7843, time 212.04
+Epoch 188, loss 0.09, acc 0.99 0.7825, time 211.94
+Epoch 189, loss 0.19, acc 1.00 0.7832, time 212.01
+Epoch 190, loss 0.09, acc 1.00 0.7828, time 211.75
+Epoch 191, loss 0.12, acc 1.00 0.7851, time 211.65
+Epoch 192, loss 0.06, acc 1.00 0.7862, time 212.08
+Epoch 193, loss 0.03, acc 1.00 0.7806, time 212.09
+Epoch 194, loss 0.06, acc 1.00 0.7821, time 212.41
+Epoch 195, loss 0.14, acc 1.00 0.7806, time 212.33
+Epoch 196, loss 0.15, acc 0.99 0.7836, time 211.75
+Epoch 197, loss 0.12, acc 1.00 0.7832, time 211.79
+Epoch 198, loss 0.14, acc 1.00 0.7843, time 212.22
+Epoch 199, loss 0.09, acc 0.99 0.7843, time 212.07
+Epoch 200, loss 0.08, acc 0.99 0.7810, time 212.21
+Done training, best_step: 11040, best_acc: 0.7869
+duration: 11.80 hours
+accuracy: 0.7869
 
 3cnn: 0.7766
 mtl+1cnn: 0.7781 
@@ -645,3 +848,161 @@ mtl+3cnn+0.005adv: 0.7810
 mtl+3cnn+0.0005*adv: 0.7825
 mtl+3cnn+0.00005*adv: 0.7836
 mtl+3cnn+0.00001*adv: 0.7817
+
+
+
+# f1 score
+
+word_dim=300, epoch=200, filter [3,4,5], 11.80 hours
+
+
+!!!WARNING!!! The proposed file contains 1 label(s) of type 'Entity-Destination(e2,e1)', which is NOT present in the key file.
+
+<<< (2*9+1)-WAY EVALUATION (USING DIRECTIONALITY)>>>:
+
+Confusion matrix:
+        C-E1 C-E2 C-W1 C-W2 C-C1 C-C2 E-D1 E-O1 E-O2 I-A1 I-A2 M-C1 M-C2 M-T1 M-T2 P-P1 P-P2  _O_ *ED2 <-- classified as
+      +-----------------------------------------------------------------------------------------------+ -SUM- skip ACTUAL
+ C-E1 | 124    1    0    0    0    0    0    0    0    0    1    0    0    0    0    0    1    7    0 |  134    0  134
+ C-E2 |   2  182    0    0    0    0    0    3    0    1    0    0    0    3    0    4    0   12    0 |  207    0  207
+ C-W1 |   0    0  134    9    0    0    1    1    0    0    0    0    3    0    0    2    1   16    0 |  167    0  167
+ C-W2 |   1    0    2  105    0    2    0    0    0    0    1    0    4    1    0    0    1   20    0 |  137    0  137
+ C-C1 |   0    0    3    0  133    0    6    0    1    0    0    0    0    0    0    0    0   19    0 |  162    0  162
+ C-C2 |   0    0    1    1    2   32    1    0    0    0    0    0    0    0    1    0    1    2    0 |   41    0   41
+ E-D1 |   0    0    2    1   11    0  269    6    1    0    1    0    0    1    0    1    0   33    0 |  326    0  326
+ E-O1 |   0    5    0    1    1    0    0  184    0    0    1    1    0    1    1    6    1   28    0 |  230    0  230
+ E-O2 |   1    0    0    1    0    1    0    0   40    0    0    0    0    0    0    0    0    2    0 |   45    0   45
+ I-A1 |   0    0    2    0    0    0    0    0    0   13    0    0    0    0    0    1    0    5    0 |   21    0   21
+ I-A2 |   0    0    2    6    0    0    1    1    0    0  102    0    0    0    0    0   11   16    0 |  139    0  139
+ M-C1 |   0    0    3    0    0    0    0    0    0    0    0   26    0    0    0    0    0   10    0 |   39    0   39
+ M-C2 |   0    0    3    2    0    1    0    0    0    0    1    0  177    1    0    0    0   23    0 |  208    0  208
+ M-T1 |   2    0    0    5    0    0    1    1    0    0    2    0    0  194    2    1    1   30    0 |  239    0  239
+ M-T2 |   0    0    0    2    0    0    0    0    0    0    0    1    0    1   41    0    3    7    0 |   55    0   55
+ P-P1 |   0    3    1    1    0    0    1    3    1    3    0    0    2    1    0   88    0   15    0 |  119    0  119
+ P-P2 |   0    0    2    3    0    0    0    0    2    0    6    1    0    0    2    1   98   13    0 |  128    0  128
+  _O_ |   4    3    7   13    6    3   11   12    2    5   19    3   15    7    4    4    5  196    1 |  320    0  320
+      +-----------------------------------------------------------------------------------------------+
+ -SUM-  134  194  162  150  153   39  291  211   47   22  134   32  201  210   51  108  123  454    1   2717    0 2717
+
+Coverage = 2717/2717 = 100.00%
+Accuracy (calculated for the above confusion matrix) = 2138/2717 = 78.69%
+Accuracy (considering all skipped examples as Wrong) = 2138/2717 = 78.69%
+Accuracy (considering all skipped examples as Other) = 2138/2717 = 78.69%
+
+Results for the individual relations:
+      Cause-Effect(e1,e2) :    P =  124/ 134 =  92.54%     R =  124/ 134 =  92.54%     F1 =  92.54%
+      Cause-Effect(e2,e1) :    P =  182/ 194 =  93.81%     R =  182/ 207 =  87.92%     F1 =  90.77%
+   Component-Whole(e1,e2) :    P =  134/ 162 =  82.72%     R =  134/ 167 =  80.24%     F1 =  81.46%
+   Component-Whole(e2,e1) :    P =  105/ 150 =  70.00%     R =  105/ 137 =  76.64%     F1 =  73.17%
+ Content-Container(e1,e2) :    P =  133/ 153 =  86.93%     R =  133/ 162 =  82.10%     F1 =  84.44%
+ Content-Container(e2,e1) :    P =   32/  39 =  82.05%     R =   32/  41 =  78.05%     F1 =  80.00%
+Entity-Destination(e1,e2) :    P =  269/ 291 =  92.44%     R =  269/ 326 =  82.52%     F1 =  87.20%
+     Entity-Origin(e1,e2) :    P =  184/ 211 =  87.20%     R =  184/ 230 =  80.00%     F1 =  83.45%
+     Entity-Origin(e2,e1) :    P =   40/  47 =  85.11%     R =   40/  45 =  88.89%     F1 =  86.96%
+ Instrument-Agency(e1,e2) :    P =   13/  22 =  59.09%     R =   13/  21 =  61.90%     F1 =  60.47%
+ Instrument-Agency(e2,e1) :    P =  102/ 134 =  76.12%     R =  102/ 139 =  73.38%     F1 =  74.73%
+ Member-Collection(e1,e2) :    P =   26/  32 =  81.25%     R =   26/  39 =  66.67%     F1 =  73.24%
+ Member-Collection(e2,e1) :    P =  177/ 201 =  88.06%     R =  177/ 208 =  85.10%     F1 =  86.55%
+     Message-Topic(e1,e2) :    P =  194/ 210 =  92.38%     R =  194/ 239 =  81.17%     F1 =  86.41%
+     Message-Topic(e2,e1) :    P =   41/  51 =  80.39%     R =   41/  55 =  74.55%     F1 =  77.36%
+  Product-Producer(e1,e2) :    P =   88/ 108 =  81.48%     R =   88/ 119 =  73.95%     F1 =  77.53%
+  Product-Producer(e2,e1) :    P =   98/ 123 =  79.67%     R =   98/ 128 =  76.56%     F1 =  78.09%
+                   _Other :    P =  196/ 454 =  43.17%     R =  196/ 320 =  61.25%     F1 =  50.65%
+
+Micro-averaged result (excluding Other):
+P = 1942/2262 =  85.85%     R = 1942/2397 =  81.02%     F1 =  83.37%
+
+MACRO-averaged result (excluding Other):
+P =  83.01%	R =  78.95%	F1 =  80.84%
+
+
+
+<<< (9+1)-WAY EVALUATION IGNORING DIRECTIONALITY >>>:
+
+Confusion matrix:
+         C-E  C-W  C-C  E-D  E-O  I-A  M-C  M-T  P-P  _O_ <-- classified as
+      +--------------------------------------------------+ -SUM- skip ACTUAL
+  C-E | 309    0    0    0    3    2    0    3    5   19 |  341    0  341
+  C-W |   1  250    2    1    1    1    7    1    4   36 |  304    0  304
+  C-C |   0    5  167    7    1    0    0    1    1   21 |  203    0  203
+  E-D |   0    3   11  269    7    1    0    1    1   33 |  326    0  326
+  E-O |   6    2    2    0  224    1    1    2    7   30 |  275    0  275
+  I-A |   0   10    0    1    1  115    0    0   12   21 |  160    0  160
+  M-C |   0    8    1    0    0    1  203    1    0   33 |  247    0  247
+  M-T |   2    7    0    1    1    2    1  238    5   37 |  294    0  294
+  P-P |   3    7    0    1    6    9    3    3  187   28 |  247    0  247
+  _O_ |   7   20    9   12   14   24   18   11    9  196 |  320    0  320
+      +--------------------------------------------------+
+ -SUM-  328  312  192  292  258  156  233  261  231  454   2717    0 2717
+
+Coverage = 2717/2717 = 100.00%
+Accuracy (calculated for the above confusion matrix) = 2158/2717 = 79.43%
+Accuracy (considering all skipped examples as Wrong) = 2158/2717 = 79.43%
+Accuracy (considering all skipped examples as Other) = 2158/2717 = 79.43%
+
+Results for the individual relations:
+             Cause-Effect :    P =  309/ 328 =  94.21%     R =  309/ 341 =  90.62%     F1 =  92.38%
+          Component-Whole :    P =  250/ 312 =  80.13%     R =  250/ 304 =  82.24%     F1 =  81.17%
+        Content-Container :    P =  167/ 192 =  86.98%     R =  167/ 203 =  82.27%     F1 =  84.56%
+       Entity-Destination :    P =  269/ 292 =  92.12%     R =  269/ 326 =  82.52%     F1 =  87.06%
+            Entity-Origin :    P =  224/ 258 =  86.82%     R =  224/ 275 =  81.45%     F1 =  84.05%
+        Instrument-Agency :    P =  115/ 156 =  73.72%     R =  115/ 160 =  71.88%     F1 =  72.78%
+        Member-Collection :    P =  203/ 233 =  87.12%     R =  203/ 247 =  82.19%     F1 =  84.58%
+            Message-Topic :    P =  238/ 261 =  91.19%     R =  238/ 294 =  80.95%     F1 =  85.77%
+         Product-Producer :    P =  187/ 231 =  80.95%     R =  187/ 247 =  75.71%     F1 =  78.24%
+                   _Other :    P =  196/ 454 =  43.17%     R =  196/ 320 =  61.25%     F1 =  50.65%
+
+Micro-averaged result (excluding Other):
+P = 1962/2263 =  86.70%     R = 1962/2397 =  81.85%     F1 =  84.21%
+
+MACRO-averaged result (excluding Other):
+P =  85.92%	R =  81.09%	F1 =  83.40%
+
+
+
+<<< (9+1)-WAY EVALUATION TAKING DIRECTIONALITY INTO ACCOUNT -- OFFICIAL >>>:
+
+Confusion matrix:
+         C-E  C-W  C-C  E-D  E-O  I-A  M-C  M-T  P-P  _O_ <-- classified as
+      +--------------------------------------------------+ -SUM- xDIRx skip  ACTUAL
+  C-E | 306    0    0    0    3    2    0    3    5   19 |  338     3     0    341
+  C-W |   1  239    2    1    1    1    7    1    4   36 |  293    11     0    304
+  C-C |   0    5  165    7    1    0    0    1    1   21 |  201     2     0    203
+  E-D |   0    3   11  269    7    1    0    1    1   33 |  326     0     0    326
+  E-O |   6    2    2    0  224    1    1    2    7   30 |  275     0     0    275
+  I-A |   0   10    0    1    1  115    0    0   12   21 |  160     0     0    160
+  M-C |   0    8    1    0    0    1  203    1    0   33 |  247     0     0    247
+  M-T |   2    7    0    1    1    2    1  235    5   37 |  291     3     0    294
+  P-P |   3    7    0    1    6    9    3    3  186   28 |  246     1     0    247
+  _O_ |   7   20    9   12   14   24   18   11    9  196 |  320     0     0    320
+      +--------------------------------------------------+
+ -SUM-  325  301  190  292  258  156  233  258  230  454   2697    20     0   2717
+
+Coverage = 2717/2717 = 100.00%
+Accuracy (calculated for the above confusion matrix) = 2138/2717 = 78.69%
+Accuracy (considering all skipped examples as Wrong) = 2138/2717 = 78.69%
+Accuracy (considering all skipped examples as Other) = 2138/2717 = 78.69%
+
+Results for the individual relations:
+             Cause-Effect :    P =  306/( 325 +   3) =  93.29%     R =  306/ 341 =  89.74%     F1 =  91.48%
+          Component-Whole :    P =  239/( 301 +  11) =  76.60%     R =  239/ 304 =  78.62%     F1 =  77.60%
+        Content-Container :    P =  165/( 190 +   2) =  85.94%     R =  165/ 203 =  81.28%     F1 =  83.54%
+       Entity-Destination :    P =  269/( 292 +   0) =  92.12%     R =  269/ 326 =  82.52%     F1 =  87.06%
+            Entity-Origin :    P =  224/( 258 +   0) =  86.82%     R =  224/ 275 =  81.45%     F1 =  84.05%
+        Instrument-Agency :    P =  115/( 156 +   0) =  73.72%     R =  115/ 160 =  71.88%     F1 =  72.78%
+        Member-Collection :    P =  203/( 233 +   0) =  87.12%     R =  203/ 247 =  82.19%     F1 =  84.58%
+            Message-Topic :    P =  235/( 258 +   3) =  90.04%     R =  235/ 294 =  79.93%     F1 =  84.68%
+         Product-Producer :    P =  186/( 230 +   1) =  80.52%     R =  186/ 247 =  75.30%     F1 =  77.82%
+                   _Other :    P =  196/( 454 +   0) =  43.17%     R =  196/ 320 =  61.25%     F1 =  50.65%
+
+Micro-averaged result (excluding Other):
+P = 1942/2263 =  85.82%     R = 1942/2397 =  81.02%     F1 =  83.35%
+
+MACRO-averaged result (excluding Other):
+P =  85.13%	R =  80.32%	F1 =  82.62%
+
+
+
+<<< The official score is (9+1)-way evaluation with directionality taken into account: macro-averaged F1 = 82.62% >>>
+
+

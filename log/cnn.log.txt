@@ -385,8 +385,7 @@ word_dim=300, epoch=200 : 0.7795
 
 # f1 score
 
-word_dim=300, epoch=200, don't train embedding, max_len=97, filter [3,4,5]
-1.94 hours
+word_dim=300, epoch=200, filter [3,4,5], 1.94 hours
 
 
 !!!WARNING!!! The proposed file contains 1 label(s) of type 'Entity-Destination(e2,e1)', which is NOT present in the key file.
