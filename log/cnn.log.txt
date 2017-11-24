@@ -97,6 +97,8 @@ Epoch 39, loss 0.01, acc 1.00 0.7534, time 39.60
 Epoch 40, loss 0.01, acc 1.00 0.7541, time 40.93
 
 $ 300d don't train word embedding
+$ with or without batch_norm
+
 Epoch 1, loss 2.70, acc 0.26 0.4141, time 33.52
 Epoch 2, loss 1.81, acc 0.47 0.5377, time 35.72
 Epoch 3, loss 1.63, acc 0.50 0.5999, time 35.70

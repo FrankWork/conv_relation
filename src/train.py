@@ -36,6 +36,7 @@ tf.app.flags.DEFINE_integer("pos_dim", 5, "position embedding size")
 tf.app.flags.DEFINE_integer("filter_size", 3, "cnn number of hidden unit")
 tf.app.flags.DEFINE_integer("num_filters", 100, "cnn number of output unit")
 # tf.app.flags.DEFINE_integer("linear_size", 200, "linear layer number of hidden unit")
+tf.app.flags.DEFINE_float("loss_diff_coef", 0.000001, "coefficient of Orthogonality Constraints")
 
 tf.app.flags.DEFINE_integer("rnn_size", 100, "hidden unit of rnn")
 tf.app.flags.DEFINE_integer("rnn_layers", 1, "layers of rnn")

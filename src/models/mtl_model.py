@@ -1,70 +1,8 @@
-import random
-import os
 import tensorflow as tf
-from tensorflow.python.framework import ops
 from models.base_model import BaseModel
 from .common import *
 
-
-# compile:
-# TF_INC=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
-# TF_LIB=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_lib())')
-# g++ -std=c++11 -shared grl_op.cc -o grl_op.so -fPIC -D_GLIBCXX_USE_CXX11_ABI=0 -I$TF_INC -I$TF_INC/external/nsync/public -L$TF_LIB -ltensorflow_framework -O2
-
-# load op library
-op_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'grl_op.so')
-grl_module = tf.load_op_library(op_path)
-
-@ops.RegisterGradient("GrlOp")
-def _grl_op_grad(op, grad):
-  """The gradients for `grl_op` (gradient reversal layer).
-
-  Args:
-    op: The `grl_op` `Operation` that we are differentiating, which we can use
-      to find the inputs and outputs of the original op.
-    grad: Gradient with respect to the output of the `grl_op` op.
-
-  Returns:
-    Gradients with respect to the input of `grl_op`.
-  """
-  return [-grad]  # List of one Tensor, since we have one input
-
 FLAGS = tf.app.flags.FLAGS
-
-def cnn_forward_lite(name, sent_pos, max_len, num_filters, use_grl=False):
-  with tf.variable_scope(name, reuse=None):
-    input = tf.expand_dims(sent_pos, axis=-1)
-    if use_grl:
-      input = grl_module.grl_op(input)
-    input_dim = input.shape.as_list()[2]
-
-    # convolutional layer
-    pool_outputs = []
-    for filter_size in [3, 4, 5]:
-    # filter_size = 3
-      with tf.variable_scope('conv-%s' % filter_size):
-        conv_weight = tf.get_variable('W1', 
-                              [filter_size, input_dim, 1, num_filters], 
-                              initializer=tf.truncated_normal_initializer(stddev=0.1))
-        conv_bias = tf.get_variable('b1', [num_filters], 
-                              initializer=tf.constant_initializer(0.1))
-        if use_grl:
-          conv_weight = grl_module.grl_op(conv_weight)
-          conv_bias = grl_module.grl_op(conv_bias)
-        conv = tf.nn.conv2d(input,
-                            conv_weight,
-                            strides=[1, 1, input_dim, 1],
-                            padding='SAME')
-        # Batch normalization here
-        conv = tf.layers.batch_normalization(conv)
-        conv = tf.nn.relu(conv + conv_bias) # batch_size, max_len, 1, num_filters
-        pool = tf.nn.max_pool(conv, ksize= [1, max_len, 1, 1], 
-                              strides=[1, max_len, 1, 1], padding='SAME') # batch_size, 1, 1, num_filters
-        pool_outputs.append(pool)
-    pools = tf.reshape(tf.concat(pool_outputs, 3), [-1, 3*num_filters])
-    # pools = tf.reshape(pool, [-1, num_filters])
-
-    return pools
 
 def adversarial_loss(feature, relation, is_train, keep_prob):
   feature_size = feature.shape.as_list()[1]
@@ -116,7 +54,7 @@ class MTLModel(BaseModel):
     sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
     if is_train and keep_prob < 1:
       sent_pos = tf.nn.dropout(sent_pos, keep_prob)
-    shared = cnn_forward_lite('cnn-shared', sent_pos, max_len, num_filters, use_grl=True)
+    shared = cnn_forward('cnn-shared', sent_pos, None, max_len, num_filters, use_grl=True)
     loss_adv = adversarial_loss(shared, relation, is_train, keep_prob)
 
     # 10 classifiers for 10 tasks, task related loss
@@ -125,7 +63,6 @@ class MTLModel(BaseModel):
     # task-B (B-relation): 3 class: (e1, e2), (e2, e1), other
     # task-O (Other)     : 2 class: true, false
     probs_buf = []
-    task_features = []
     loss_task = tf.constant(0, dtype=tf.float32)
     loss_diff = tf.constant(0, dtype=tf.float32)
     for task in range(num_relations):
@@ -133,9 +70,8 @@ class MTLModel(BaseModel):
       if is_train and keep_prob < 1:
         sent_pos = tf.nn.dropout(sent_pos, keep_prob)
 
-      cnn_out = cnn_forward_lite('cnn-%d'%task, sent_pos, max_len, num_filters)
+      cnn_out = cnn_forward('cnn-%d'%task, sent_pos, None, max_len, num_filters)
       # feature 
-      task_features.append(cnn_out)
       feature = tf.concat([cnn_out, shared, lexical], axis=1)
       # feature = tf.concat([cnn_out, lexical], axis=1)
       feature_size = feature.shape.as_list()[1]
@@ -161,6 +97,7 @@ class MTLModel(BaseModel):
       probs = probs[:, :-1] 
       probs_buf.append(probs)
       
+      # task specific loss
       other_mask = (num_class-1)*tf.ones_like(self.rid)
       task_labels = tf.where(tf.equal(self.rid, task), 
                              self.direction, 
@@ -173,10 +110,14 @@ class MTLModel(BaseModel):
                                     logits = logits))
       loss_task += entropy
 
+      # Orthogonality Constraints
+      # cnn_out = tf.nn.l2_normalize(cnn_out, -1)
       loss_diff += tf.reduce_sum(
                       tf.square(
                         tf.matmul(cnn_out, shared, transpose_a=True)
                       ))
+    
+    # get overall accuracy
     # self.rid:       5, 5, 7, 7, 1, O
     # self.direction: 0, 1, 0, 1, 0, 0
     
@@ -199,20 +140,11 @@ class MTLModel(BaseModel):
     accuracy = tf.equal(predicts, labels)
     accuracy = tf.reduce_mean(tf.cast(accuracy, tf.float32))
 
-    # Orthogonality Constraints
-
-    # (r, batch, hsize) => (batch, r, hsize)
-    # task_features = tf.stack(task_features, axis=1) 
-    # shared = tf.expand_dims(shared, axis=2)# (batch, hsize, 1)
-    # loss_diff = tf.reduce_sum(
-    #   tf.pow(tf.matmul(task_features, shared), 2)
-    # )
-
     self.logits = logits
     self.prediction = predicts
     self.accuracy = accuracy
     # self.loss = loss_task + 0.05*loss_adv + 0.01*loss_diff
-    self.loss = loss_task + 0.00005*loss_adv #+ 0.001*loss_diff# 
+    self.loss = loss_task + 0.00005*loss_adv + FLAGS.loss_diff_coef*loss_diff
 
     if not is_train:
       return 

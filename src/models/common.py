@@ -1,4 +1,29 @@
+import os
 import tensorflow as tf
+from tensorflow.python.framework import ops
+
+# compile:
+# TF_INC=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
+# TF_LIB=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_lib())')
+# g++ -std=c++11 -shared grl_op.cc -o grl_op.so -fPIC -D_GLIBCXX_USE_CXX11_ABI=0 -I$TF_INC -I$TF_INC/external/nsync/public -L$TF_LIB -ltensorflow_framework -O2
+
+# load op library
+op_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'grl_op.so')
+grl_module = tf.load_op_library(op_path)
+
+@ops.RegisterGradient("GrlOp")
+def _grl_op_grad(op, grad):
+  """The gradients for `grl_op` (gradient reversal layer).
+
+  Args:
+    op: The `grl_op` `Operation` that we are differentiating, which we can use
+      to find the inputs and outputs of the original op.
+    grad: Gradient with respect to the output of the `grl_op` op.
+
+  Returns:
+    Gradients with respect to the input of `grl_op`.
+  """
+  return [-grad]  # List of one Tensor, since we have one input
 
 def linear_layer(name, x, in_size, out_size, is_regularize=False):
   with tf.variable_scope(name):
@@ -24,9 +49,11 @@ def conv2d(name, input, filter_size, num_filters):
                         padding='SAME')
   return conv
 
-def cnn_forward(name, sent_pos, lexical, max_len, num_filters):
+def cnn_forward(name, sent_pos, lexical, max_len, num_filters, use_grl=False):
   with tf.variable_scope(name):
     input = tf.expand_dims(sent_pos, axis=-1)
+    if use_grl:
+      input = grl_module.grl_op(input)
     input_dim = input.shape.as_list()[2]
 
     # convolutional layer
@@ -38,11 +65,15 @@ def cnn_forward(name, sent_pos, lexical, max_len, num_filters):
                               initializer=tf.truncated_normal_initializer(stddev=0.1))
         conv_bias = tf.get_variable('b1', [num_filters], 
                               initializer=tf.constant_initializer(0.1))
+        if use_grl:
+          conv_weight = grl_module.grl_op(conv_weight)
+          conv_bias = grl_module.grl_op(conv_bias)
         conv = tf.nn.conv2d(input,
                             conv_weight,
                             strides=[1, 1, input_dim, 1],
                             padding='SAME')
         # Batch normalization here
+        conv = tf.layers.batch_normalization(conv)
         conv = tf.nn.relu(conv + conv_bias) # batch_size, max_len, 1, num_filters
         pool = tf.nn.max_pool(conv, ksize= [1, max_len, 1, 1], 
                               strides=[1, max_len, 1, 1], padding='SAME') # batch_size, 1, 1, num_filters
@@ -50,7 +81,9 @@ def cnn_forward(name, sent_pos, lexical, max_len, num_filters):
     pools = tf.reshape(tf.concat(pool_outputs, 3), [-1, 3*num_filters])
 
     # feature 
-    feature = tf.concat([lexical, pools], axis=1)
+    feature = pools
+    if lexical:
+      feature = tf.concat([lexical, feature], axis=1)
     return feature
 
 def wide_cnn_forward(sent_pos, lexical, max_len, num_filters, 
