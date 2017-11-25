@@ -41,7 +41,7 @@ tf.app.flags.DEFINE_string("results_file", "data/results.txt", "predicted result
 tf.app.flags.DEFINE_string("logdir", "saved_models/", "where to save the model")
 
 # tf.app.flags.DEFINE_integer("freq_threshold", None, "vocab frequency threshold to keep the word")
-tf.app.flags.DEFINE_integer("max_len", 97, "if length of a sentence is large than max_len, truncate it")
+tf.app.flags.DEFINE_integer("max_len", 97, "max length of sentences")
 tf.app.flags.DEFINE_integer("num_relations", 19, "number of relations")
 tf.app.flags.DEFINE_integer("word_dim", 50, "word embedding size")
 tf.app.flags.DEFINE_integer("num_epochs", 50, "number of epochs")

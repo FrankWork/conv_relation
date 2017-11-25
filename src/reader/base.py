@@ -158,60 +158,116 @@ def gen_senna_embeddings(word2id,
   print("%d zero vectors." % n_zero)
   return word_embed
 
-def position_feature(n):
+def map_words_to_id(raw_data, word2id):
+  '''inplace convert sentence from a list of words to a list of ids
+  Args:
+    raw_data: a list of Raw_Example
+    word2id: dict, {word: id, ...}
   '''
-  position feature used in cnn, aka relative distance
-  '''
-  # FIXME: FLAGS.pos_num
-  if n < -60:
-    return 0
-  if n >= -60 and n <= 60:
-    return n + 61
-  if n > 60:
-    return 122
+  for raw_example in raw_data:
+    for idx, word in enumerate(raw_example.sentence):
+      raw_example.sentence[idx] = word2id[word]
 
-def format_data(raw_data, word2id, max_len):
-  '''format data used in neural nets
-  '''
-  data = []
-  for example in raw_data:
-    sentence = [START_ID]
-    sentence.extend([word2id[w] for w in example.sentence])
-    sentence.append(END_ID)
-    sentence.extend([PAD_ID]*(max_len - len(sentence)))
+def _lexical_feature(raw_example):
+  def _entity_context(e_idx, sent):
+    ''' return [w(e-1), w(e), w(e+1)]
+    '''
+    context = []
+    context.append(sent[e_idx])
 
-    # FIXME: entity is represented by the last word
-    e1_idx = example.entity1.last + 1 # +1 for START_ID
-    e2_idx = example.entity2.last + 1
-
-    # ignore WordNet hypernyms in paper
-    lexical = []
-    if e1_idx < max_len:
-      lexical.extend([sentence[e1_idx-1], sentence[e1_idx], sentence[e1_idx+1] ])
+    if e_idx == 0:
+      context.append(sent[e_idx])
     else:
-      lexical.extend([PAD_ID,PAD_ID,PAD_ID])
-
-    if e2_idx+1 < max_len:
-      lexical.extend([sentence[e2_idx-1], sentence[e2_idx], sentence[e2_idx+1] ])
+      context.append(sent[e_idx-1])
+    
+    if e_idx == len(sent)-1:
+      context.append(sent[e_idx])
     else:
-      lexical.extend([PAD_ID,PAD_ID,PAD_ID])
+      context.append(sent[e_idx+1])
+    
+    return context
+
+    
+  e1_idx = raw_example.entity1.last
+  e2_idx = raw_example.entity2.last
+
+  context1 = _entity_context(e1_idx, raw_example.sentence)
+  context2 = _entity_context(e2_idx, raw_example.sentence)
+
+  # ignore WordNet hypernyms in paper
+  lexical = context1 + context2
+  return lexical
+
+def _position_feature(raw_example):
+  def distance(n):
+    '''convert relative distance to positive number
+    '''
+    # FIXME: FLAGS.pos_num
+    if n < -60:
+      return 0
+    if n >= -60 and n <= 60:
+      return n + 61
+    if n > 60:
+      return 122
+
+  e1_idx = raw_example.entity1.last
+  e2_idx = raw_example.entity2.last
+
+  position1 = []
+  position2 = []
+  length = len(raw_example.sentence)
+  for i in range(length):
+    position1.append(distance(i-e1_idx))
+    position2.append(distance(i-e2_idx))
   
-    position1 = []
-    for i in range(max_len):
-      position1.append(position_feature(i-e1_idx))
-    position2 = []
-    for i in range(max_len):
-      position2.append(position_feature(i-e2_idx))
+  return position1, position2
 
-    if isinstance(example.label, MTL_Label):
-      rid = example.label.relation
-      direction = example.label.direction
-      data.append((sentence, position1, position2, lexical, rid, direction))
-    else:
-      rid = example.label
-      data.append((sentence, position1, position2, lexical, rid))
-      
-  return np.array(data)
+def build_sequence_example(raw_example):
+  '''
+  Args: 
+    raw_example : type Raw_Example
+
+  Returns:
+    tf.trian.SequenceExample
+  '''
+  ex = tf.train.SequenceExample()
+
+  lexical = _lexical_feature(raw_example)
+  ex.context.feature['lexical'].int64_list.value.extend(lexical)
+
+  if isinstance(raw_example.label, MTL_Label):
+    rid = raw_example.label.relation
+    direction = raw_example.label.direction
+    ex.context.feature['rid'].int64_list.value.append(rid)
+    ex.context.feature['direction'].int64_list.value.append(direction)
+  else:
+    rid = raw_example.label
+    ex.context.feature['rid'].int64_list.value.append(rid)
+
+  for word_id in raw_example.sentence:
+    word = ex.feature_lists.feature_list['sentence'].feature.add()
+    word.int64_list.value.append(word_id)
+  
+  position1, position2 = _position_feature(raw_example)
+  for pos_val in position1:
+    pos = ex.feature_lists.feature_list['position1'].feature.add()
+    pos.int64_list.value.append(pos_val)
+  for pos_val in position2:
+    pos = ex.feature_lists.feature_list['position2'].feature.add()
+    pos.int64_list.value.append(pos_val)
+
+  return ex
+
+def write_tfrecords(raw_data, filename):
+  '''convert the raw_data to tf.trian.SequenceExample and write to file
+  Args:
+    raw_data: a list of 'Raw_Example'
+  '''
+  writer = tf.python_io.TFRecordWriter(filename)
+  for raw_example in raw_data:
+    example = build_sequence_example(raw_example)
+    writer.write(example.SerializeToString())
+  writer.close()
 
 def gen_batch_data(data, num_epoches, batch_size, shuffle=True):
   '''generate a batch iterator
@@ -270,6 +326,19 @@ def inputs(mtl_mode=False):
     word_embed = gen_google_embeddings(word2id,
                               FLAGS.word_embed300_orig, 
                               FLAGS.word_embed300_trim)
+
+  # map words to ids
+  map_words_to_id(raw_train_data, word2id)
+  map_words_to_id(raw_test_data, word2id)
+
+  # TODO: finish the work below
+  # filename is None
+  write_tfrecords(raw_train_data, filename)
+  write_tfrecords(raw_test_data, filename)
+
+  print(raw_train_data[0].sentence)
+
+  exit()
 
   FLAGS.max_len = FLAGS.max_len + 2 # append start and end word
   format_train_data = format_data(raw_train_data, word2id,  FLAGS.max_len)
