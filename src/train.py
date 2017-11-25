@@ -18,8 +18,24 @@ tf.app.flags.DEFINE_string("train_file", "data/train.txt", "training file")
 tf.app.flags.DEFINE_string("test_file", "data/test.txt", "Test file")
 tf.app.flags.DEFINE_string("vocab_file", "data/vocab.txt", "vocab file, automantic generated")
 tf.app.flags.DEFINE_string("vocab_freq_file", "data/vocab_freq.txt", "vocab freqs file, automantic generated")
-tf.app.flags.DEFINE_string("word_embed_orig", "data/GoogleNews-vectors-negative300.bin", "google news word embeddding")
-tf.app.flags.DEFINE_string("word_embed_trim", "data/embed300.trim.npy", "trimmed google embedding")
+
+tf.app.flags.DEFINE_string("word_embed300_orig", 
+                                  "data/GoogleNews-vectors-negative300.bin", 
+                                  "google news word embeddding")
+tf.app.flags.DEFINE_string("word_embed300_trim", 
+                                  "data/embed300.trim.npy", 
+                                  "trimmed google embedding")
+
+tf.app.flags.DEFINE_string("word_embed50_orig", 
+                                  "data/embedding/senna/embeddings.txt", 
+                                  "senna words embeddding")
+tf.app.flags.DEFINE_string("senna_words_lst", 
+                                  "data/embedding/senna/words.lst", 
+                                  "senna words list")
+tf.app.flags.DEFINE_string("word_embed50_trim", 
+                                  "data/embed50.trim.npy", 
+                                  "trimmed senna embedding")
+
 tf.app.flags.DEFINE_string("relations_file", "data/relations_new.txt", "relations file")
 tf.app.flags.DEFINE_string("results_file", "data/results.txt", "predicted results file")
 tf.app.flags.DEFINE_string("logdir", "saved_models/", "where to save the model")
@@ -27,7 +43,7 @@ tf.app.flags.DEFINE_string("logdir", "saved_models/", "where to save the model")
 # tf.app.flags.DEFINE_integer("freq_threshold", None, "vocab frequency threshold to keep the word")
 tf.app.flags.DEFINE_integer("max_len", 97, "if length of a sentence is large than max_len, truncate it")
 tf.app.flags.DEFINE_integer("num_relations", 19, "number of relations")
-tf.app.flags.DEFINE_integer("word_dim", None, "word embedding size, automatic parse from data")
+tf.app.flags.DEFINE_integer("word_dim", 50, "word embedding size")
 tf.app.flags.DEFINE_integer("num_epochs", 50, "number of epochs")
 tf.app.flags.DEFINE_integer("batch_size", 100, "batch size")
 

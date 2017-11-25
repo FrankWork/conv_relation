@@ -88,7 +88,7 @@ def build_vocab(raw_train_data, raw_test_data, vocab_file, vocab_freq_file):
   print('%d words' % len(word2id)) 
   return word2id, id2word
 
-def gen_embeddings(word2id, word_embed_orig, word_embed_trim):
+def gen_google_embeddings(word2id, word_embed_orig, word_embed_trim):
   '''trim unnecessary words from original pre-trained word embedding
 
   Args:
@@ -108,7 +108,48 @@ def gen_embeddings(word2id, word_embed_orig, word_embed_trim):
     np.save(word_embed_trim, word_embed)
   
   word_embed = np.load(word_embed_trim)
-  FLAGS.word_dim = word_embed.shape[1]
+  # FLAGS.word_dim = word_embed.shape[1]
+  zeros = np.zeros((FLAGS.word_dim), dtype=np.float32)
+  n_zero = 0
+  for i in range(word_embed.shape[0]):
+    if np.array_equal(word_embed[i], zeros):
+      n_zero += 1
+  print("%d zero vectors." % n_zero)
+  return word_embed
+
+def gen_senna_embeddings(word2id, 
+                        word_embed_orig,
+                        senna_words_lst,
+                        word_embed_trim):
+  '''trim unnecessary words from original pre-trained word embedding
+
+  Args:
+    word2id: dict, {'I':0, 'you': 1, ...}
+    word_embed_oirg: string, file name of the original pre-trained embedding
+    senna_words_lst: string, file name of the senna words list w.r.t the embed
+    word_embed_trim: string, file name of the trimmed embedding
+  '''
+  if not os.path.exists(word_embed_trim):
+    pre_embed = dict()
+
+    wl_senna = open(senna_words_lst, "r").readlines()
+    em_senna = open(word_embed_orig, "r").readlines()
+    for idx in range(len(wl_senna)):
+      word = wl_senna[idx].strip()
+      line_tokens = em_senna[idx].strip().split()
+      embedding = [float(x) for x in line_tokens]
+      pre_embed[word] = embedding
+
+    shape = (len(word2id), FLAGS.word_dim)
+    word_embed = np.zeros(shape, dtype=np.float32)
+
+    for w, i in word2id.items():
+      if w in pre_embed:
+        word_embed[i] = pre_embed[w]
+    np.save(word_embed_trim, word_embed)
+  
+  word_embed = np.load(word_embed_trim)
+  # FLAGS.word_dim = word_embed.shape[1]
   zeros = np.zeros((FLAGS.word_dim), dtype=np.float32)
   n_zero = 0
   for i in range(word_embed.shape[0]):
@@ -220,9 +261,15 @@ def inputs(mtl_mode=False):
                                  FLAGS.vocab_file, 
                                  FLAGS.vocab_freq_file)
 
-  word_embed = gen_embeddings(word2id,
-                              FLAGS.word_embed_orig, 
-                              FLAGS.word_embed_trim)
+  if FLAGS.word_dim == 50:
+    word_embed = gen_senna_embeddings(word2id,
+                              FLAGS.word_embed50_orig,
+                              FLAGS.senna_words_lst,
+                              FLAGS.word_embed50_trim)
+  elif FLAGS.word_dim == 300:
+    word_embed = gen_google_embeddings(word2id,
+                              FLAGS.word_embed300_orig, 
+                              FLAGS.word_embed300_trim)
 
   FLAGS.max_len = FLAGS.max_len + 2 # append start and end word
   format_train_data = format_data(raw_train_data, word2id,  FLAGS.max_len)

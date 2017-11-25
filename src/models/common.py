@@ -82,7 +82,7 @@ def cnn_forward(name, sent_pos, lexical, max_len, num_filters, use_grl=False):
 
     # feature 
     feature = pools
-    if lexical:
+    if lexical is not None:
       feature = tf.concat([lexical, feature], axis=1)
     return feature
 
