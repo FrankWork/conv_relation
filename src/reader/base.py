@@ -315,12 +315,13 @@ def read_tfrecord_to_batch(filename, epoch, batch_size, shuffle=True):
   dataset = dataset.repeat(epoch)
 
   # [] for no padding, [None] for padding to maximum length
+  n = FLAGS.max_len
   if FLAGS.model == 'mtl':
     # lexical, rid, direction, sentence, position1, position2
-    padded_shapes = ([None,], [], [], [None], [None], [None])
+    padded_shapes = ([None,], [], [], [n], [n], [n])
   else:
     # lexical, rid, sentence, position1, position2
-    padded_shapes = ([None,], [], [None], [None], [None])
+    padded_shapes = ([None,], [], [n], [n], [n])
   dataset = dataset.padded_batch(batch_size, padded_shapes)
   
   iterator = dataset.make_one_shot_iterator()

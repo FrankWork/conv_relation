@@ -2,6 +2,8 @@ import os
 import tensorflow as tf
 from tensorflow.python.framework import ops
 
+FLAGS = tf.app.flags.FLAGS
+
 # compile:
 # TF_INC=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
 # TF_LIB=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_lib())')
@@ -49,10 +51,10 @@ def conv2d(name, input, filter_size, num_filters):
                         padding='SAME')
   return conv
 
-def cnn_forward(name, sent_pos, lexical, num_filters, use_grl=False):
+def cnn_forward(name, sent_pos, lexical, num_filters, mtl=False):
   with tf.variable_scope(name):
     input = tf.expand_dims(sent_pos, axis=-1)
-    if use_grl:
+    if mtl:
       input = grl_module.grl_op(input)
     input_dim = input.shape.as_list()[2]
 
@@ -65,7 +67,7 @@ def cnn_forward(name, sent_pos, lexical, num_filters, use_grl=False):
                               initializer=tf.truncated_normal_initializer(stddev=0.1))
         conv_bias = tf.get_variable('b1', [num_filters], 
                               initializer=tf.constant_initializer(0.1))
-        if use_grl:
+        if mtl:
           conv_weight = grl_module.grl_op(conv_weight)
           conv_bias = grl_module.grl_op(conv_bias)
         conv = tf.nn.conv2d(input,
@@ -73,9 +75,11 @@ def cnn_forward(name, sent_pos, lexical, num_filters, use_grl=False):
                             strides=[1, 1, input_dim, 1],
                             padding='SAME')
         # Batch normalization here
-        conv = tf.layers.batch_normalization(conv)
+        if mtl:
+          conv = tf.layers.batch_normalization(conv)
         conv = tf.nn.relu(conv + conv_bias) # batch_size, max_len, 1, num_filters
-        max_len = conv.shape.as_list()[1]
+        # max_len = conv.shape.as_list()[1]
+        max_len = FLAGS.max_len
         pool = tf.nn.max_pool(conv, ksize= [1, max_len, 1, 1], 
                               strides=[1, max_len, 1, 1], padding='SAME') # batch_size, 1, 1, num_filters
         pool_outputs.append(pool)

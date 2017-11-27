@@ -120,13 +120,15 @@ def test(sess):
 def main(_):
   with tf.Graph().as_default():
     train_data, test_data, word_embed = base_reader.inputs()
-    sv = tf.train.Supervisor()
-    with sv.managed_session() as sess:
-      print('='*80)
-      for i in range(10):
-        arr = sess.run(train_data)
-        print(train_data[2].shape, arr[2].shape)
-      exit()
+
+    # sv = tf.train.Supervisor()
+    # with sv.managed_session() as sess:
+    #   print('='*80)
+    #   for i in range(10):
+    #     arr = sess.run(test_data)
+    #     print(train_data[2].shape, arr[2].shape)
+    #     print(arr[2][0])
+    #   exit()
 
     
     if FLAGS.model == 'cnn':
