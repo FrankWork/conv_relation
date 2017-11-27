@@ -11,16 +11,13 @@ class CNNModel(BaseModel):
   http://www.aclweb.org/anthology/C14-1220
   '''
 
-  def __init__(self, word_embed, word_dim, max_len, 
+  def __init__(self, word_embed, data, word_dim, 
               pos_num, pos_dim, num_relations,
-              keep_prob, filter_size, num_filters,
-              lrn_rate, decay_steps, decay_rate, is_train):
+              keep_prob, num_filters,
+              lrn_rate, is_train):
     # input data
-    self.sent_id = tf.placeholder(tf.int32, [None, max_len])
-    self.pos1_id = tf.placeholder(tf.int32, [None, max_len])
-    self.pos2_id = tf.placeholder(tf.int32, [None, max_len])
-    self.lexical_id = tf.placeholder(tf.int32, [None, 6])
-    self.rid = tf.placeholder(tf.int32, [None])
+    lexical, rid, sentence, pos1, pos2 = data
+
     # embedding initialization
     # xavier = tf.contrib.layers.xavier_initializer()
     word_embed = tf.get_variable('word_embed', 
@@ -29,24 +26,22 @@ class CNNModel(BaseModel):
                                  trainable=False)
     # word_embed = tf.get_variable('word_embed', [len(word_embed), word_dim], dtype=tf.float32)
     pos_embed = tf.get_variable('pos_embed', shape=[pos_num, pos_dim])
-    relation = tf.one_hot(self.rid, num_relations)       # batch_size, num_relations
-
-    self.labels = relation
 
     # # embedding lookup
-    lexical = tf.nn.embedding_lookup(word_embed, self.lexical_id) # batch_size, 6, word_dim
+    lexical = tf.nn.embedding_lookup(word_embed, lexical) # batch_size, 6, word_dim
     lexical = tf.reshape(lexical, [-1, 6*word_dim])
+    self.labels = tf.one_hot(rid, num_relations)       # batch_size, num_relations
 
-    sentence = tf.nn.embedding_lookup(word_embed, self.sent_id)   # batch_size, max_len, word_dim
-    pos1 = tf.nn.embedding_lookup(pos_embed, self.pos1_id)       # batch_size, max_len, pos_dim
-    pos2 = tf.nn.embedding_lookup(pos_embed, self.pos2_id)       # batch_size, max_len, pos_dim
+    sentence = tf.nn.embedding_lookup(word_embed, sentence)   # batch_size, max_len, word_dim
+    pos1 = tf.nn.embedding_lookup(pos_embed, pos1)       # batch_size, max_len, pos_dim
+    pos2 = tf.nn.embedding_lookup(pos_embed, pos2)       # batch_size, max_len, pos_dim
 
     # cnn model
     sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
     if is_train and keep_prob < 1:
       sent_pos = tf.nn.dropout(sent_pos, keep_prob)
 
-    feature = cnn_forward('cnn', sent_pos, lexical, max_len, num_filters)
+    feature = cnn_forward('cnn', sent_pos, lexical, num_filters)
     feature_size = feature.shape.as_list()[1]
     
     if is_train and keep_prob < 1:
@@ -57,10 +52,10 @@ class CNNModel(BaseModel):
 
     prediction = tf.nn.softmax(logits)
     prediction = tf.argmax(prediction, axis=1)
-    accuracy = tf.equal(prediction, tf.argmax(relation, axis=1))
+    accuracy = tf.equal(prediction, tf.argmax(self.labels, axis=1))
     accuracy = tf.reduce_mean(tf.cast(accuracy, tf.float32))
     loss_ce = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(labels=relation, logits=logits))
+        tf.nn.softmax_cross_entropy_with_logits(labels=self.labels, logits=logits))
 
     self.logits = logits
     self.prediction = prediction
@@ -82,18 +77,18 @@ class CNNModel(BaseModel):
   
 
 
-def build_train_valid_model(word_embed):
+def build_train_valid_model(word_embed, train_data, test_data):
   '''Relation Classification via Convolutional Deep Neural Network'''
   with tf.name_scope("Train"):
     with tf.variable_scope('CNNModel', reuse=None):
-      m_train = CNNModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
+      m_train = CNNModel( word_embed, train_data, FLAGS.word_dim,
                     FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
-                    FLAGS.keep_prob, FLAGS.filter_size, FLAGS.num_filters, 
-                    FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=True)
+                    FLAGS.keep_prob, FLAGS.num_filters, 
+                    FLAGS.lrn_rate, is_train=True)
   with tf.name_scope('Valid'):
     with tf.variable_scope('CNNModel', reuse=True):
-      m_valid = CNNModel( word_embed, FLAGS.word_dim, FLAGS.max_len,
+      m_valid = CNNModel( word_embed, test_data, FLAGS.word_dim,
                     FLAGS.pos_num, FLAGS.pos_dim, FLAGS.num_relations,
-                    1.0, FLAGS.filter_size, FLAGS.num_filters, 
-                    FLAGS.lrn_rate, FLAGS.decay_steps, FLAGS.decay_rate, is_train=False)
+                    1.0, FLAGS.num_filters, 
+                    FLAGS.lrn_rate, is_train=False)
   return m_train, m_valid

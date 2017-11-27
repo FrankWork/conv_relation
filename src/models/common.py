@@ -49,7 +49,7 @@ def conv2d(name, input, filter_size, num_filters):
                         padding='SAME')
   return conv
 
-def cnn_forward(name, sent_pos, lexical, max_len, num_filters, use_grl=False):
+def cnn_forward(name, sent_pos, lexical, num_filters, use_grl=False):
   with tf.variable_scope(name):
     input = tf.expand_dims(sent_pos, axis=-1)
     if use_grl:
@@ -75,6 +75,7 @@ def cnn_forward(name, sent_pos, lexical, max_len, num_filters, use_grl=False):
         # Batch normalization here
         conv = tf.layers.batch_normalization(conv)
         conv = tf.nn.relu(conv + conv_bias) # batch_size, max_len, 1, num_filters
+        max_len = conv.shape.as_list()[1]
         pool = tf.nn.max_pool(conv, ksize= [1, max_len, 1, 1], 
                               strides=[1, max_len, 1, 1], padding='SAME') # batch_size, 1, 1, num_filters
         pool_outputs.append(pool)

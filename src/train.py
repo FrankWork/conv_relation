@@ -14,27 +14,38 @@ from models import mtl_model
 
 
 
-tf.app.flags.DEFINE_string("train_file", "data/train.txt", "training file")
-tf.app.flags.DEFINE_string("test_file", "data/test.txt", "Test file")
+tf.app.flags.DEFINE_string("train_file", "data/train.txt", 
+                             "original training file")
+tf.app.flags.DEFINE_string("test_file", "data/test.txt", 
+                             "original test file")
 tf.app.flags.DEFINE_string("vocab_file", "data/vocab.txt", "vocab file, automantic generated")
 tf.app.flags.DEFINE_string("vocab_freq_file", "data/vocab_freq.txt", "vocab freqs file, automantic generated")
 
+tf.app.flags.DEFINE_string("train_record", "data/train.tfrecord", 
+                             "training file of TFRecord format")
+tf.app.flags.DEFINE_string("test_record", "data/test.tfrecord", 
+                             "Test file of TFRecord format")
+tf.app.flags.DEFINE_string("train_mtl_record", "data/train.tfrecord", 
+                             "Multi-task learing training file of TFRecord format")
+tf.app.flags.DEFINE_string("test_mtl_record", "data/test.tfrecord", 
+                             "Multi-task learing test file of TFRecord format")
+
 tf.app.flags.DEFINE_string("word_embed300_orig", 
-                                  "data/GoogleNews-vectors-negative300.bin", 
-                                  "google news word embeddding")
+                             "data/GoogleNews-vectors-negative300.bin", 
+                             "google news word embeddding")
 tf.app.flags.DEFINE_string("word_embed300_trim", 
-                                  "data/embed300.trim.npy", 
-                                  "trimmed google embedding")
+                             "data/embed300.trim.npy", 
+                             "trimmed google embedding")
 
 tf.app.flags.DEFINE_string("word_embed50_orig", 
-                                  "data/embedding/senna/embeddings.txt", 
-                                  "senna words embeddding")
+                             "data/embedding/senna/embeddings.txt", 
+                             "senna words embeddding")
 tf.app.flags.DEFINE_string("senna_words_lst", 
-                                  "data/embedding/senna/words.lst", 
-                                  "senna words list")
+                             "data/embedding/senna/words.lst", 
+                             "senna words list")
 tf.app.flags.DEFINE_string("word_embed50_trim", 
-                                  "data/embed50.trim.npy", 
-                                  "trimmed senna embedding")
+                             "data/embed50.trim.npy", 
+                             "trimmed senna embedding")
 
 tf.app.flags.DEFINE_string("relations_file", "data/relations_new.txt", "relations file")
 tf.app.flags.DEFINE_string("results_file", "data/results.txt", "predicted results file")
@@ -68,22 +79,22 @@ tf.app.flags.DEFINE_boolean('test', False, 'set True to test')
 FLAGS = tf.app.flags.FLAGS
 
 
-def train(sess, m_train, m_valid, train_data, get_train_feed, test_feed):
+def train(sv, sess, m_train, m_valid):
   n = 1
   best = .0
   best_step = n
   start_time = time.time()
   orig_begin_time = start_time
-  for batch_data in train_data:
+  
+  while not sv.should_stop():
     epoch = n // 80
     fetches = [m_train.train_op, m_train.loss, m_train.accuracy]
-    train_feed = get_train_feed(m_train, batch_data)
-    _, loss, acc = sess.run(fetches, train_feed)
+    _, loss, acc = sess.run(fetches)
     if n % 80 == 0:
       now = time.time()
       duration = now - start_time
       start_time = now
-      v_acc = sess.run(m_valid.accuracy, test_feed)
+      v_acc = sess.run(m_valid.accuracy)
       if best < v_acc:
         best = v_acc
         best_step = n
@@ -97,47 +108,35 @@ def train(sess, m_train, m_valid, train_data, get_train_feed, test_feed):
   print('Done training, best_step: %d, best_acc: %.4f' % (best_step, best))
   print('duration: %.2f hours' % duration)
 
-def test(sess, m_valid, feed):
+def test(sess):
   m_valid.restore(sess)
   fetches = [m_valid.accuracy, m_valid.prediction]
-  accuracy, predictions = sess.run(fetches, feed)
+  accuracy, predictions = sess.run(fetches)
   print('accuracy: %.4f' % accuracy)
   
   base_reader.write_results(predictions, FLAGS.relations_file, FLAGS.results_file)
 
 
 def main(_):
-  train_data, test_data, word_embed = base_reader.inputs(FLAGS.model=='mtl')
-
   with tf.Graph().as_default():
+    train_data, test_data, word_embed = base_reader.inputs()
+    sv = tf.train.Supervisor()
+    with sv.managed_session() as sess:
+      print('='*80)
+      for i in range(10):
+        arr = sess.run(train_data)
+        print(train_data[2].shape, arr[2].shape)
+      exit()
+
+    
     if FLAGS.model == 'cnn':
-      m_train, m_valid = cnn_model.build_train_valid_model(word_embed)
+      m_train, m_valid = cnn_model.build_train_valid_model(word_embed, 
+                                                      train_data, test_data)
     elif FLAGS.model == 'mtl':
-      m_train, m_valid = mtl_model.build_train_valid_model(word_embed)
+      m_train, m_valid = mtl_model.build_train_valid_model(word_embed, 
+                                                      train_data, test_data)
     
     m_train.set_saver(FLAGS.model)
-
-    test_feed = {
-          m_valid.sent_id : test_data['sent_id'],
-          m_valid.pos1_id : test_data['pos1_id'],
-          m_valid.pos2_id : test_data['pos2_id'],
-          m_valid.lexical_id : test_data['lexical_id'],
-          m_valid.rid : test_data['rid'],
-    }
-    if FLAGS.model == 'mtl':
-      test_feed[m_valid.direction] = test_data['direction']
-    
-    def get_train_feed(m_train, batch_data):
-      batch_feed = {
-          m_train.sent_id : batch_data['sent_id'],
-          m_train.pos1_id : batch_data['pos1_id'],
-          m_train.pos2_id : batch_data['pos2_id'],
-          m_train.lexical_id : batch_data['lexical_id'],
-          m_train.rid : batch_data['rid'],
-      }
-      if FLAGS.model == 'mtl':
-        batch_feed[m_train.direction] = batch_data['direction']
-      return batch_feed
     
     init_op = tf.group(tf.global_variables_initializer(),
                         tf.local_variables_initializer())# for file queue
@@ -148,9 +147,9 @@ def main(_):
       
       if not FLAGS.test:
         # m_train.restore(sess)
-        train(sess, m_train, m_valid, train_data, get_train_feed, test_feed)
+        train(sv, sess, m_train, m_valid)
 
-      test(sess, m_valid, test_feed)
+      test(sess, m_valid)
   
           
 if __name__ == '__main__':

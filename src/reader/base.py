@@ -17,11 +17,10 @@ MTL_Label = namedtuple('MTL_Label', 'relation direction')
 
 FLAGS = tf.app.flags.FLAGS # load FLAGS.word_dim
 
-def load_raw_data(filename, mtl_mode=False,  max_len=None):
+def load_raw_data(filename):
   '''load raw data from text file, 
   and convert word to lower case, 
   and replace digits with 0s;
-  if length of a sentence is large than max_len, truncate it
 
   return: a list of Raw_Example
   '''
@@ -31,14 +30,11 @@ def load_raw_data(filename, mtl_mode=False,  max_len=None):
       # example = Raw_Example()
       words = line.strip().lower().split()
       
-      if max_len:
-        sent = words[5: max_len]
-      else:
-        sent = words[5:]
+      sent = words[5:]
       sent = [re.sub("\d+", "0", w) for w in sent]
 
       label = int(words[0])
-      if mtl_mode:
+      if FLAGS.model=='mtl':
         # label = 0,      1,      2,     3
         # mtl_  = (0, 0)  (0, 1)  (1, 0) (1, 1)       
         label = MTL_Label(label//2, label%2)
@@ -223,7 +219,10 @@ def _position_feature(raw_example):
   return position1, position2
 
 def build_sequence_example(raw_example):
-  '''
+  '''build tf.train.SequenceExample from Raw_Example
+  context features : lexical, rid, direction (mtl)
+  sequence features: sentence, position1, position2
+
   Args: 
     raw_example : type Raw_Example
 
@@ -258,59 +257,80 @@ def build_sequence_example(raw_example):
 
   return ex
 
-def write_tfrecords(raw_data, filename):
-  '''convert the raw_data to tf.trian.SequenceExample and write to file
+def maybe_write_tfrecord(raw_data, filename):
+  '''if the destination file is not exist on disk, convert the raw_data to 
+  tf.trian.SequenceExample and write to file.
+
   Args:
     raw_data: a list of 'Raw_Example'
   '''
-  writer = tf.python_io.TFRecordWriter(filename)
-  for raw_example in raw_data:
-    example = build_sequence_example(raw_example)
-    writer.write(example.SerializeToString())
-  writer.close()
+  if not os.path.exists(filename):
+    writer = tf.python_io.TFRecordWriter(filename)
+    for raw_example in raw_data:
+      example = build_sequence_example(raw_example)
+      writer.write(example.SerializeToString())
+    writer.close()
 
-def gen_batch_data(data, num_epoches, batch_size, shuffle=True):
-  '''generate a batch iterator
+def _parse_tfexample(serialized_example):
+  '''parse serialized tf.train.SequenceExample to tensors
+  context features : lexical, rid, direction (mtl)
+  sequence features: sentence, position1, position2
   '''
-  data_size = len(data)
-  num_batches_per_epoch = int(np.ceil( len(data)/batch_size ))
+  context_features={
+                      'lexical'   : tf.FixedLenFeature([6], tf.int64),
+                      'rid'    : tf.FixedLenFeature([], tf.int64)}
+  if FLAGS.model == 'mtl':
+    context_features['direction'] = tf.FixedLenFeature([], tf.int64)
+  sequence_features={
+                      'sentence' : tf.FixedLenSequenceFeature([], tf.int64),
+                      'position1'  : tf.FixedLenSequenceFeature([], tf.int64),
+                      'position2'  : tf.FixedLenSequenceFeature([], tf.int64)}
+  context_dict, sequence_dict = tf.parse_single_sequence_example(
+                      serialized_example,
+                      context_features   = context_features,
+                      sequence_features  = sequence_features)
 
-  for _ in range(num_epoches):
-    # Shuffle the data at each epoch
-    if shuffle:
-      indices = np.random.permutation(np.arange(data_size))
-      shuffled_data = data[indices]
-    else:
-      shuffled_data = data
+  sentence = sequence_dict['sentence']
+  position1 = sequence_dict['position1']
+  position2 = sequence_dict['position2']
 
-    for batch_num in range(num_batches_per_epoch):
-      start = batch_num * batch_size
-      end = min((batch_num + 1) * batch_size, data_size)
-      batch_data = {
-        'sent_id': [], 'pos1_id':[], 'pos2_id':[], 'lexical_id':[], 'rid':[]
-      }
-      if len(shuffled_data[0]) == 6:# mtl mode
-        batch_data['direction'] = []
+  lexical = context_dict['lexical']
+  rid = context_dict['rid']
+  if FLAGS.model == 'mtl':
+    direction = context_dict['direction']
+    return lexical, rid, direction, sentence, position1, position2
+  return lexical, rid, sentence, position1, position2
 
-      for item in shuffled_data[start:end]:
-        if len(item) == 6:# mtl mode
-          sentence, position1, position2, lexical, rid, direction = item
-          batch_data['direction'].append(direction)
-        else:
-          sentence, position1, position2, lexical, rid = item
+def read_tfrecord_to_batch(filename, epoch, batch_size, shuffle=True):
+  '''read TFRecord file to get batch tensors for tensorflow models
 
-        batch_data['sent_id'].append(sentence)
-        batch_data['pos1_id'].append(position1)
-        batch_data['pos2_id'].append(position2)
-        batch_data['lexical_id'].append(lexical)
-        batch_data['rid'].append(rid)
-          
-      yield batch_data
+  Returns:
+    a tuple of batched tensors
+  '''
+  dataset = tf.data.TFRecordDataset([filename])
+  # Parse the record into tensors
+  dataset = dataset.map(_parse_tfexample) 
+  if shuffle:
+    dataset = dataset.shuffle(buffer_size=100)
+  dataset = dataset.repeat(epoch)
+
+  # [] for no padding, [None] for padding to maximum length
+  if FLAGS.model == 'mtl':
+    # lexical, rid, direction, sentence, position1, position2
+    padded_shapes = ([None,], [], [], [None], [None], [None])
+  else:
+    # lexical, rid, sentence, position1, position2
+    padded_shapes = ([None,], [], [None], [None], [None])
+  dataset = dataset.padded_batch(batch_size, padded_shapes)
+  
+  iterator = dataset.make_one_shot_iterator()
+  batch = iterator.get_next()
+  return batch
 
 
-def inputs(mtl_mode=False):
-  raw_train_data = load_raw_data(FLAGS.train_file, mtl_mode, FLAGS.max_len)
-  raw_test_data = load_raw_data(FLAGS.test_file, mtl_mode, FLAGS.max_len)
+def inputs():
+  raw_train_data = load_raw_data(FLAGS.train_file)
+  raw_test_data = load_raw_data(FLAGS.test_file)
 
   word2id, id2word = build_vocab(raw_train_data, 
                                  raw_test_data, 
@@ -331,24 +351,21 @@ def inputs(mtl_mode=False):
   map_words_to_id(raw_train_data, word2id)
   map_words_to_id(raw_test_data, word2id)
 
-  # TODO: finish the work below
-  # filename is None
-  write_tfrecords(raw_train_data, filename)
-  write_tfrecords(raw_test_data, filename)
+  # convert raw data to TFRecord format data, and write to file
+  if FLAGS.model=='mtl':
+    train_record = FLAGS.train_mtl_record
+    test_record = FLAGS.test_mtl_record  
+  else:
+    train_record = FLAGS.train_record
+    test_record = FLAGS.test_record
+  
+  maybe_write_tfrecord(raw_train_data, train_record)
+  maybe_write_tfrecord(raw_test_data, test_record)
 
-  print(raw_train_data[0].sentence)
-
-  exit()
-
-  FLAGS.max_len = FLAGS.max_len + 2 # append start and end word
-  format_train_data = format_data(raw_train_data, word2id,  FLAGS.max_len)
-  format_test_data = format_data(raw_test_data, word2id,  FLAGS.max_len)
-
-  train_data = gen_batch_data(format_train_data,
-                                FLAGS.num_epochs, 
-                                FLAGS.batch_size)
-  test_data = gen_batch_data(format_test_data, 1, 2717, shuffle=False)
-  test_data = test_data.__next__()
+  train_data = read_tfrecord_to_batch(train_record, 
+                              FLAGS.num_epochs, FLAGS.batch_size)
+  test_data = read_tfrecord_to_batch(test_record, 
+                              FLAGS.num_epochs, 2717, shuffle=False)
 
   return train_data, test_data, word_embed
 
