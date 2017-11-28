@@ -29,7 +29,7 @@ def _grl_op_grad(op, grad):
 
 def linear_layer(name, x, in_size, out_size, is_regularize=False):
   with tf.variable_scope(name):
-    loss_l2 = tf.constant(0)
+    loss_l2 = tf.constant(0, dtype=tf.float32)
     w = tf.get_variable('linear_W', [in_size, out_size], 
                       initializer=tf.truncated_normal_initializer(stddev=0.1))
     b = tf.get_variable('linear_b', [out_size], 

@@ -57,6 +57,8 @@ tf.app.flags.DEFINE_integer("num_relations", 19, "number of relations")
 tf.app.flags.DEFINE_integer("word_dim", 50, "word embedding size")
 tf.app.flags.DEFINE_integer("num_epochs", 50, "number of epochs")
 tf.app.flags.DEFINE_integer("batch_size", 100, "batch size")
+tf.app.flags.DEFINE_boolean('train_embed', True, 
+                             'whether to train word embedding')
 
 tf.app.flags.DEFINE_integer("pos_num", 123, "number of position feature")
 tf.app.flags.DEFINE_integer("pos_dim", 5, "position embedding size")
@@ -79,34 +81,39 @@ tf.app.flags.DEFINE_boolean('test', False, 'set True to test')
 FLAGS = tf.app.flags.FLAGS
 
 
-def train(sv, sess, m_train, m_valid):
+def train(sess, m_train, m_valid):
   n = 1
   best = .0
   best_step = n
   start_time = time.time()
   orig_begin_time = start_time
-  
-  while not sv.should_stop():
-    epoch = n // 80
-    fetches = [m_train.train_op, m_train.loss, m_train.accuracy]
-    _, loss, acc = sess.run(fetches)
-    if n % 80 == 0:
-      now = time.time()
-      duration = now - start_time
-      start_time = now
-      v_acc = sess.run(m_valid.accuracy)
-      if best < v_acc:
-        best = v_acc
-        best_step = n
-        m_train.save(sess, best_step)
-      print("Epoch %d, loss %.2f, acc %.2f %.4f, time %.2f" % 
-                                (epoch, loss, acc, v_acc, duration))
-      sys.stdout.flush()
-    n += 1
+
+  while True:
+    try:
+      epoch = n // 80
+      fetches = [m_train.train_op, m_train.loss, m_train.accuracy]
+      _, loss, acc = sess.run(fetches)
+      if n % 80 == 0:
+        now = time.time()
+        duration = now - start_time
+        start_time = now
+        v_acc = sess.run(m_valid.accuracy)
+        if best < v_acc:
+          best = v_acc
+          best_step = n
+          m_train.save(sess, best_step)
+        print("Epoch %d, loss %.2f, acc %.2f %.4f, time %.2f" % 
+                                  (epoch, loss, acc, v_acc, duration))
+        sys.stdout.flush()
+      n += 1
+    except tf.errors.OutOfRangeError:
+      break
+
   duration = time.time() - orig_begin_time
   duration /= 3600
   print('Done training, best_step: %d, best_acc: %.4f' % (best_step, best))
   print('duration: %.2f hours' % duration)
+  sys.stdout.flush()
 
 def test(sess, m_valid):
   m_valid.restore(sess)
@@ -149,7 +156,7 @@ def main(_):
       
       if not FLAGS.test:
         # m_train.restore(sess)
-        train(sv, sess, m_train, m_valid)
+        train(sess, m_train, m_valid)
 
       test(sess, m_valid)
   

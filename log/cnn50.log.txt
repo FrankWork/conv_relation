@@ -1,0 +1,74 @@
+$ train embedding, 1 pos_embed
+
+accuracy: 0.7516
+
+$ train embedding, 2 pos_embed
+
+accuracy: 0.7604
+
+$ train embedding, 2 pos_embed, loss_l2
+
+Epoch 1, loss 6.05, acc 0.19 0.2425, time 6.93
+Epoch 2, loss 4.64, acc 0.28 0.4461, time 8.07
+Epoch 3, loss 3.71, acc 0.34 0.5204, time 8.11
+Epoch 4, loss 3.09, acc 0.35 0.5605, time 8.10
+Epoch 5, loss 2.69, acc 0.32 0.5852, time 8.12
+Epoch 6, loss 2.49, acc 0.39 0.6073, time 7.95
+Epoch 7, loss 2.30, acc 0.44 0.6257, time 7.91
+Epoch 8, loss 2.19, acc 0.37 0.6463, time 7.91
+Epoch 9, loss 1.67, acc 0.47 0.6540, time 7.88
+Epoch 10, loss 1.64, acc 0.49 0.6665, time 7.88
+Epoch 11, loss 1.95, acc 0.42 0.6728, time 7.88
+Epoch 12, loss 1.48, acc 0.49 0.6768, time 7.93
+Epoch 13, loss 1.82, acc 0.44 0.6835, time 8.51
+Epoch 14, loss 1.24, acc 0.59 0.6901, time 8.52
+Epoch 15, loss 1.34, acc 0.53 0.6975, time 8.22
+Epoch 16, loss 1.38, acc 0.53 0.6967, time 8.97
+Epoch 17, loss 1.40, acc 0.53 0.7052, time 8.53
+Epoch 18, loss 1.19, acc 0.61 0.7092, time 8.61
+Epoch 19, loss 1.07, acc 0.60 0.7144, time 8.06
+Epoch 20, loss 1.24, acc 0.54 0.7170, time 8.03
+Epoch 21, loss 1.19, acc 0.64 0.7177, time 7.91
+Epoch 22, loss 1.05, acc 0.61 0.7214, time 8.21
+Epoch 23, loss 0.92, acc 0.68 0.7280, time 8.18
+Epoch 24, loss 1.17, acc 0.57 0.7287, time 8.03
+Epoch 25, loss 1.02, acc 0.68 0.7321, time 8.33
+Epoch 26, loss 0.96, acc 0.68 0.7324, time 8.10
+Epoch 27, loss 0.93, acc 0.70 0.7357, time 8.17
+Epoch 28, loss 0.76, acc 0.70 0.7328, time 8.01
+Epoch 29, loss 0.84, acc 0.72 0.7332, time 7.87
+Epoch 30, loss 0.86, acc 0.73 0.7376, time 7.89
+Epoch 31, loss 0.91, acc 0.71 0.7394, time 8.03
+Epoch 32, loss 0.64, acc 0.78 0.7405, time 8.15
+Epoch 33, loss 0.77, acc 0.70 0.7442, time 7.88
+Epoch 34, loss 0.50, acc 0.83 0.7442, time 7.97
+Epoch 35, loss 0.76, acc 0.74 0.7464, time 8.14
+Epoch 36, loss 0.72, acc 0.79 0.7468, time 7.95
+Epoch 37, loss 0.65, acc 0.81 0.7449, time 7.96
+Epoch 38, loss 0.61, acc 0.77 0.7508, time 8.19
+Epoch 39, loss 0.66, acc 0.76 0.7497, time 8.22
+Epoch 40, loss 0.58, acc 0.76 0.7497, time 8.14
+Epoch 41, loss 0.66, acc 0.82 0.7530, time 8.22
+Epoch 42, loss 0.69, acc 0.77 0.7556, time 8.26
+Epoch 43, loss 0.69, acc 0.77 0.7582, time 8.30
+Epoch 44, loss 0.76, acc 0.79 0.7556, time 8.71
+Epoch 45, loss 0.65, acc 0.79 0.7563, time 8.03
+Epoch 46, loss 0.52, acc 0.82 0.7589, time 8.03
+Epoch 47, loss 0.52, acc 0.86 0.7560, time 8.29
+Epoch 48, loss 0.44, acc 0.83 0.7604, time 8.64
+Epoch 49, loss 0.45, acc 0.80 0.7611, time 9.14
+Epoch 50, loss 0.43, acc 0.80 0.7641, time 8.54
+/home/lzh/bin/anaconda3/lib/python3.6/importlib/_bootstrap.py:205: RuntimeWarning: compiletime version 3.5 of module 'tensorflow.python.framework.fast_tensor_util' does not match runtime version 3.6
+  return f(*args, **kwds)
+21897 words
+2319 zero vectors.
+2017-11-28 10:31:33.470062: I tensorflow/core/platform/cpu_feature_guard.cc:137] Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2 AVX
+WARNING:tensorflow:Standard services need a 'logdir' passed to the SessionManager
+================================================================================
+accuracy: 0.7641
+
+$ don't train embedding, 2 pos_embed, loss_l2
+
+Epoch 50, loss 1.04, acc 0.62 0.7236, time 7.52
+Done training, best_step: 3680, best_acc: 0.7276
+duration: 0.11 hours

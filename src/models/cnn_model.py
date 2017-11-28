@@ -23,9 +23,10 @@ class CNNModel(BaseModel):
     word_embed = tf.get_variable('word_embed', 
                                  initializer=word_embed, 
                                  dtype=tf.float32,
-                                 trainable=False)
+                                 trainable=FLAGS.train_embed)
     # word_embed = tf.get_variable('word_embed', [len(word_embed), word_dim], dtype=tf.float32)
-    pos_embed = tf.get_variable('pos_embed', shape=[pos_num, pos_dim])
+    pos1_embed = tf.get_variable('pos1_embed', shape=[pos_num, pos_dim])
+    pos2_embed = tf.get_variable('pos2_embed', shape=[pos_num, pos_dim])
 
     # # embedding lookup
     lexical = tf.nn.embedding_lookup(word_embed, lexical) # batch_size, 6, word_dim
@@ -33,8 +34,8 @@ class CNNModel(BaseModel):
     self.labels = tf.one_hot(rid, num_relations)       # batch_size, num_relations
 
     sentence = tf.nn.embedding_lookup(word_embed, sentence)   # batch_size, max_len, word_dim
-    pos1 = tf.nn.embedding_lookup(pos_embed, pos1)       # batch_size, max_len, pos_dim
-    pos2 = tf.nn.embedding_lookup(pos_embed, pos2)       # batch_size, max_len, pos_dim
+    pos1 = tf.nn.embedding_lookup(pos1_embed, pos1)       # batch_size, max_len, pos_dim
+    pos2 = tf.nn.embedding_lookup(pos2_embed, pos2)       # batch_size, max_len, pos_dim
 
     # cnn model
     sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
@@ -48,7 +49,7 @@ class CNNModel(BaseModel):
       feature = tf.nn.dropout(feature, keep_prob)
 
     # Map the features to 19 classes
-    logits, _ = linear_layer('linear_cnn', feature, feature_size, num_relations)
+    logits, loss_l2 = linear_layer('linear_cnn', feature, feature_size, num_relations)
 
     prediction = tf.nn.softmax(logits)
     prediction = tf.argmax(prediction, axis=1)
@@ -60,7 +61,7 @@ class CNNModel(BaseModel):
     self.logits = logits
     self.prediction = prediction
     self.accuracy = accuracy
-    self.loss = loss_ce
+    self.loss = loss_ce + 0.01*loss_l2
 
     if not is_train:
       return 
