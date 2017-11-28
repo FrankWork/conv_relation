@@ -1,0 +1,113 @@
+$ train embedding, 2 pos_embed, loss_l2
+
+Epoch 1, loss 2.58, acc 0.33 0.3681, time 33.80
+Epoch 2, loss 2.19, acc 0.37 0.5510, time 41.73
+Epoch 3, loss 1.63, acc 0.50 0.6459, time 38.26
+Epoch 4, loss 1.24, acc 0.61 0.6901, time 37.89
+Epoch 5, loss 0.96, acc 0.69 0.7118, time 38.53
+Epoch 6, loss 0.81, acc 0.76 0.7188, time 38.59
+Epoch 7, loss 0.39, acc 0.87 0.7287, time 38.05
+Epoch 8, loss 0.46, acc 0.88 0.7372, time 39.25
+Epoch 9, loss 0.35, acc 0.92 0.7427, time 37.55
+Epoch 10, loss 0.36, acc 0.91 0.7431, time 38.95
+Epoch 11, loss 0.26, acc 0.91 0.7460, time 39.52
+Epoch 12, loss 0.18, acc 0.95 0.7490, time 38.70
+Epoch 13, loss 0.13, acc 0.98 0.7527, time 38.97
+Epoch 14, loss 0.16, acc 0.97 0.7479, time 37.40
+Epoch 15, loss 0.12, acc 0.98 0.7534, time 37.10
+Epoch 16, loss 0.15, acc 0.96 0.7541, time 39.05
+Epoch 17, loss 0.10, acc 0.98 0.7541, time 37.66
+Epoch 18, loss 0.06, acc 1.00 0.7571, time 40.29
+Epoch 19, loss 0.07, acc 0.99 0.7549, time 40.35
+Epoch 20, loss 0.07, acc 0.99 0.7571, time 41.44
+Epoch 21, loss 0.05, acc 1.00 0.7567, time 42.53
+Epoch 22, loss 0.07, acc 1.00 0.7593, time 39.82
+Epoch 23, loss 0.03, acc 1.00 0.7593, time 37.62
+Epoch 24, loss 0.04, acc 1.00 0.7600, time 38.72
+Epoch 25, loss 0.03, acc 0.99 0.7600, time 37.43
+Epoch 26, loss 0.03, acc 1.00 0.7541, time 38.77
+Epoch 27, loss 0.04, acc 0.99 0.7552, time 37.12
+Epoch 28, loss 0.02, acc 1.00 0.7575, time 39.08
+Epoch 29, loss 0.02, acc 1.00 0.7549, time 37.40
+Epoch 30, loss 0.02, acc 1.00 0.7575, time 38.86
+Epoch 31, loss 0.01, acc 1.00 0.7575, time 38.73
+Epoch 32, loss 0.02, acc 1.00 0.7541, time 37.46
+Epoch 33, loss 0.01, acc 1.00 0.7549, time 37.79
+Epoch 34, loss 0.01, acc 1.00 0.7552, time 38.31
+Epoch 35, loss 0.01, acc 1.00 0.7519, time 37.23
+Epoch 36, loss 0.01, acc 1.00 0.7560, time 37.16
+Epoch 37, loss 0.01, acc 1.00 0.7530, time 38.54
+Epoch 38, loss 0.02, acc 0.99 0.7497, time 38.78
+Epoch 39, loss 0.01, acc 1.00 0.7571, time 37.02
+Epoch 40, loss 0.01, acc 1.00 0.7560, time 38.82
+Epoch 41, loss 0.01, acc 1.00 0.7567, time 38.52
+Epoch 42, loss 0.01, acc 1.00 0.7567, time 37.36
+Epoch 43, loss 0.01, acc 1.00 0.7523, time 37.26
+Epoch 44, loss 0.01, acc 1.00 0.7560, time 37.15
+Epoch 45, loss 0.01, acc 1.00 0.7567, time 38.87
+Epoch 46, loss 0.01, acc 1.00 0.7571, time 40.94
+Epoch 47, loss 0.01, acc 1.00 0.7586, time 41.67
+Epoch 48, loss 0.00, acc 1.00 0.7571, time 37.74
+Epoch 49, loss 0.00, acc 1.00 0.7571, time 38.79
+Epoch 50, loss 0.00, acc 1.00 0.7556, time 37.29
+Epoch 51, loss 0.00, acc 1.00 0.7575, time 39.01
+Epoch 52, loss 0.01, acc 0.99 0.7567, time 37.60
+
+0.7600
+
+
+$ don't train embedding, 2 pos_embed, loss_l2
+
+
+Epoch 1, loss 3.01, acc 0.18 0.3162, time 31.39
+Epoch 2, loss 1.94, acc 0.39 0.4936, time 34.33
+Epoch 3, loss 1.84, acc 0.41 0.5705, time 33.89
+Epoch 4, loss 1.67, acc 0.45 0.6246, time 33.66
+Epoch 5, loss 1.39, acc 0.54 0.6511, time 35.22
+Epoch 6, loss 1.30, acc 0.58 0.6776, time 34.88
+Epoch 7, loss 1.40, acc 0.47 0.6934, time 33.86
+Epoch 8, loss 1.26, acc 0.59 0.7000, time 34.02
+Epoch 9, loss 1.39, acc 0.53 0.7070, time 34.41
+Epoch 10, loss 1.07, acc 0.60 0.7144, time 35.29
+Epoch 11, loss 1.00, acc 0.70 0.7225, time 34.30
+Epoch 12, loss 1.00, acc 0.63 0.7269, time 34.16
+Epoch 13, loss 0.90, acc 0.68 0.7313, time 37.25
+Epoch 14, loss 0.93, acc 0.66 0.7368, time 35.94
+Epoch 15, loss 0.76, acc 0.74 0.7409, time 38.66
+Epoch 16, loss 0.90, acc 0.74 0.7453, time 35.25
+Epoch 17, loss 0.96, acc 0.64 0.7483, time 34.59
+Epoch 18, loss 0.83, acc 0.74 0.7567, time 36.05
+Epoch 19, loss 0.82, acc 0.76 0.7567, time 37.58
+Epoch 20, loss 0.70, acc 0.80 0.7563, time 35.66
+Epoch 21, loss 0.59, acc 0.76 0.7582, time 34.29
+Epoch 22, loss 0.67, acc 0.77 0.7578, time 38.19
+Epoch 23, loss 0.47, acc 0.86 0.7615, time 35.91
+Epoch 24, loss 0.65, acc 0.80 0.7622, time 38.38
+Epoch 25, loss 0.61, acc 0.74 0.7637, time 36.22
+Epoch 26, loss 0.66, acc 0.83 0.7637, time 35.62
+Epoch 27, loss 0.56, acc 0.82 0.7626, time 37.58
+Epoch 28, loss 0.56, acc 0.82 0.7641, time 36.14
+Epoch 29, loss 0.54, acc 0.82 0.7678, time 36.74
+Epoch 30, loss 0.57, acc 0.78 0.7648, time 35.75
+Epoch 31, loss 0.54, acc 0.84 0.7718, time 35.61
+Epoch 32, loss 0.49, acc 0.83 0.7725, time 36.00
+Epoch 33, loss 0.41, acc 0.85 0.7744, time 39.43
+Epoch 34, loss 0.49, acc 0.80 0.7744, time 37.15
+Epoch 35, loss 0.46, acc 0.84 0.7748, time 35.19
+Epoch 36, loss 0.53, acc 0.82 0.7744, time 35.49
+Epoch 37, loss 0.46, acc 0.83 0.7788, time 35.75
+Epoch 38, loss 0.35, acc 0.88 0.7751, time 34.21
+Epoch 39, loss 0.54, acc 0.83 0.7748, time 35.74
+Epoch 40, loss 0.43, acc 0.87 0.7725, time 35.70
+Epoch 41, loss 0.43, acc 0.83 0.7722, time 33.88
+Epoch 42, loss 0.37, acc 0.86 0.7751, time 33.91
+Epoch 43, loss 0.40, acc 0.85 0.7773, time 33.88
+Epoch 44, loss 0.37, acc 0.87 0.7744, time 33.92
+Epoch 45, loss 0.36, acc 0.87 0.7755, time 35.93
+Epoch 46, loss 0.32, acc 0.91 0.7759, time 33.87
+Epoch 47, loss 0.56, acc 0.80 0.7748, time 35.23
+Epoch 48, loss 0.35, acc 0.88 0.7748, time 33.93
+Epoch 49, loss 0.38, acc 0.89 0.7748, time 35.66
+Epoch 50, loss 0.30, acc 0.93 0.7736, time 33.75
+Done training, best_step: 2960, best_acc: 0.7788
+duration: 0.49 hours
