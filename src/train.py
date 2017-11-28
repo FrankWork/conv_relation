@@ -108,7 +108,7 @@ def train(sv, sess, m_train, m_valid):
   print('Done training, best_step: %d, best_acc: %.4f' % (best_step, best))
   print('duration: %.2f hours' % duration)
 
-def test(sess):
+def test(sess, m_valid):
   m_valid.restore(sess)
   fetches = [m_valid.accuracy, m_valid.prediction]
   accuracy, predictions = sess.run(fetches)
