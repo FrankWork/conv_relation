@@ -1,8 +1,8 @@
 #! /bin/bash
 
-python src/train.py --model=cnn --num_epochs=50 --word_dim=50
+python src/train.py --model=cnn --num_epochs=200 --word_dim=300
 # python src/train.py --model=cnn --num_epochs=200 --test
-# src/scorer.pl data/test_keys.txt data/results.txt
+src/scorer.pl data/test_keys.txt data/results.txt
 
 # python src/train.py --model=mtl
 

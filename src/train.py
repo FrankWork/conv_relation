@@ -57,7 +57,7 @@ tf.app.flags.DEFINE_integer("num_relations", 19, "number of relations")
 tf.app.flags.DEFINE_integer("word_dim", 50, "word embedding size")
 tf.app.flags.DEFINE_integer("num_epochs", 50, "number of epochs")
 tf.app.flags.DEFINE_integer("batch_size", 100, "batch size")
-tf.app.flags.DEFINE_boolean('train_embed', True, 
+tf.app.flags.DEFINE_boolean('train_embed', False, 
                              'whether to train word embedding')
 
 tf.app.flags.DEFINE_integer("pos_num", 123, "number of position feature")
