@@ -20,10 +20,11 @@ class CNNModel(BaseModel):
 
     # embedding initialization
     # xavier = tf.contrib.layers.xavier_initializer()
+    w_trainable = True if FLAGS.word_dim==50 else False
     word_embed = tf.get_variable('word_embed', 
                                  initializer=word_embed, 
                                  dtype=tf.float32,
-                                 trainable=FLAGS.train_embed)
+                                 trainable=w_trainable)
     # word_embed = tf.get_variable('word_embed', [len(word_embed), word_dim], dtype=tf.float32)
     pos1_embed = tf.get_variable('pos1_embed', shape=[pos_num, pos_dim])
     pos2_embed = tf.get_variable('pos2_embed', shape=[pos_num, pos_dim])

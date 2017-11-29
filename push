@@ -1,5 +1,5 @@
-#server=liuzhihui@219.216.64.88:/home/liuzhihui/advrelation/
-server=lzh@219.216.77.206:/home/lzh/work/python/qa-rc/advrelation/
+server=liuzhihui@219.216.64.88:/home/liuzhihui/advrelation/
+#server=lzh@219.216.77.206:/home/lzh/work/python/qa-rc/advrelation/
 
 rsync -avh --delete --exclude=saved_models/*/  \
            --exclude=__pycache__/   \
