@@ -8,9 +8,13 @@
 # python src/train.py --model=mtl --num_epochs=200 --word_dim=300 --test
 # src/scorer.pl data/test_keys.txt data/results.txt
 
-python3='/home/renfeiliang/bin/anaconda3/bin/python3'
+# python cnn/train_relcnn.py
+
+# python3='/home/renfeiliang/bin/anaconda3/bin/python3'
 # $python3 cnn/train_relcnn.py
 
-CUDA_VISIBLE_DEVICES=1 $python3 src1/train.py --model=cnn --num_epochs=10 --word_dim=50
+# CUDA_VISIBLE_DEVICES=1 $python3 src1/train.py --model=cnn --num_epochs=10 --word_dim=50
 
-#python src1/train.py --model=cnn --num_epochs=200 --word_dim=50
+python src1/train.py --model=cnn --num_epochs=200 --word_dim=50
+
+# 0.77696

@@ -133,6 +133,7 @@ def gen_google_embeddings(word2id, word_embed_orig, word_embed_trim):
   n_zero = 0
   for i in range(word_embed.shape[0]):
     if np.array_equal(word_embed[i], zeros):
+      word_embed[i] = np.random.normal(0, 0.1,(FLAGS.word_dim))
       n_zero += 1
   print("%d zero vectors." % n_zero)
   return word_embed
@@ -174,6 +175,7 @@ def gen_senna_embeddings(word2id,
   n_zero = 0
   for i in range(word_embed.shape[0]):
     if np.array_equal(word_embed[i], zeros):
+      word_embed[i] = np.random.normal(0, 0.1,(FLAGS.word_dim))
       n_zero += 1
   print("%d zero vectors." % n_zero)
   return word_embed
@@ -345,14 +347,15 @@ def read_tfrecord_to_batch(filename, epoch, batch_size, shuffle=True):
   dataset = dataset.repeat(epoch)
 
   # [] for no padding, [None] for padding to maximum length
-  n = FLAGS.max_len
-  if FLAGS.model == 'mtl':
-    # lexical, rid, direction, sentence, position1, position2
-    padded_shapes = ([None,], [], [], [n], [n], [n])
-  else:
-    # lexical, rid, sentence, position1, position2
-    padded_shapes = ([None,], [], [n], [n], [n])
-  dataset = dataset.padded_batch(batch_size, padded_shapes)
+  # n = FLAGS.max_len
+  # if FLAGS.model == 'mtl':
+  #   # lexical, rid, direction, sentence, position1, position2
+  #   padded_shapes = ([None,], [], [], [n], [n], [n])
+  # else:
+  #   # lexical, rid, sentence, position1, position2
+  #   padded_shapes = ([None,], [], [n], [n], [n])
+  # dataset = dataset.padded_batch(batch_size, padded_shapes)
+  dataset = dataset.batch(batch_size)
   
   iterator = dataset.make_one_shot_iterator()
   batch = iterator.get_next()
@@ -394,7 +397,7 @@ def inputs():
   maybe_write_tfrecord(raw_test_data, test_record)
 
   train_data = read_tfrecord_to_batch(train_record, 
-                              FLAGS.num_epochs, FLAGS.batch_size)
+                              FLAGS.num_epochs, FLAGS.batch_size, shuffle=False)
   test_data = read_tfrecord_to_batch(test_record, 
                               FLAGS.num_epochs, 2717, shuffle=False)
 

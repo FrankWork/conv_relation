@@ -8,11 +8,13 @@ import os
 import time
 import sys
 import tensorflow as tf
+import numpy as np
 from reader import base as base_reader
 from models import cnn_model
 from models import mtl_model
 
-
+tf.set_random_seed(0)
+np.random.seed(0)
 
 tf.app.flags.DEFINE_string("train_file", "data/train.txt", 
                              "original training file")
@@ -52,7 +54,7 @@ tf.app.flags.DEFINE_string("results_file", "data/results.txt", "predicted result
 tf.app.flags.DEFINE_string("logdir", "saved_models/", "where to save the model")
 
 # tf.app.flags.DEFINE_integer("freq_threshold", None, "vocab frequency threshold to keep the word")
-tf.app.flags.DEFINE_integer("max_len", 97, "max length of sentences")
+tf.app.flags.DEFINE_integer("max_len", 96, "max length of sentences")
 tf.app.flags.DEFINE_integer("num_relations", 19, "number of relations")
 tf.app.flags.DEFINE_integer("word_dim", 50, "word embedding size")
 tf.app.flags.DEFINE_integer("num_epochs", 200, "number of epochs")
@@ -87,6 +89,7 @@ def train(sess, m_train, m_valid):
   orig_begin_time = start_time
 
   # trace runtime bottleneck
+  # chrome://tracing
   run_metadata=tf.RunMetadata()
   options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
   from tensorflow.python.client import timeline
@@ -172,6 +175,12 @@ def main(_):
     with tf.Session(config=config) as sess:
       sess.run(init_op)
       print('='*80)
+      sum = 0.
+      for tensor in sess.run(train_data):
+        sum += np.sum(tensor)
+      print(sum)
+      exit()
+
       
       if not FLAGS.test:
         # m_train.restore(sess)
