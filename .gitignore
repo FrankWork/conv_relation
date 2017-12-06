@@ -7,4 +7,6 @@ __pycache__/
 *.so
 *.tfrecords
 tmp*
-relationclassifycnn/
+cnn/
+push
+run
