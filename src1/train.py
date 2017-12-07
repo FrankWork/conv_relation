@@ -21,16 +21,7 @@ tf.app.flags.DEFINE_string("train_file", "data/train.txt",
 tf.app.flags.DEFINE_string("test_file", "data/test.txt", 
                              "original test file")
 tf.app.flags.DEFINE_string("vocab_file", "data/vocab.txt", "vocab file, automantic generated")
-tf.app.flags.DEFINE_string("vocab_freq_file", "data/vocab_freq.txt", "vocab freqs file, automantic generated")
-
-tf.app.flags.DEFINE_string("train_record", "data/train.tfrecord", 
-                             "training file of TFRecord format")
-tf.app.flags.DEFINE_string("test_record", "data/test.tfrecord", 
-                             "Test file of TFRecord format")
-tf.app.flags.DEFINE_string("train_mtl_record", "data/train.tfrecord", 
-                             "Multi-task learing training file of TFRecord format")
-tf.app.flags.DEFINE_string("test_mtl_record", "data/test.tfrecord", 
-                             "Multi-task learing test file of TFRecord format")
+# tf.app.flags.DEFINE_string("vocab_freq_file", "data/vocab_freq.txt", "vocab freqs file, automantic generated")
 
 tf.app.flags.DEFINE_string("word_embed300_orig", 
                              "data/GoogleNews-vectors-negative300.bin", 
@@ -48,6 +39,15 @@ tf.app.flags.DEFINE_string("senna_words_lst",
 tf.app.flags.DEFINE_string("word_embed50_trim", 
                              "data/embed50.trim.npy", 
                              "trimmed senna embedding")
+
+tf.app.flags.DEFINE_string("train_record", "data/train.tfrecord", 
+                             "training file of TFRecord format")
+tf.app.flags.DEFINE_string("test_record", "data/test.tfrecord", 
+                             "Test file of TFRecord format")
+tf.app.flags.DEFINE_string("train_mtl_record", "data/train.tfrecord", 
+                             "Multi-task learing training file of TFRecord format")
+tf.app.flags.DEFINE_string("test_mtl_record", "data/test.tfrecord", 
+                             "Multi-task learing test file of TFRecord format")
 
 tf.app.flags.DEFINE_string("relations_file", "data/relations_new.txt", "relations file")
 tf.app.flags.DEFINE_string("results_file", "data/results.txt", "predicted results file")
@@ -77,8 +77,31 @@ tf.app.flags.DEFINE_float("keep_prob", 0.5, "dropout keep probability")
 
 tf.app.flags.DEFINE_string("model", "cnn", "cnn or mtl model")
 tf.app.flags.DEFINE_boolean('test', False, 'set True to test')
+tf.app.flags.DEFINE_boolean('trace', False, 'set True to test')
 
 FLAGS = tf.app.flags.FLAGS
+
+def trace_runtime(sess, m_train):
+  '''
+  trace runtime bottleneck using timeline api
+
+  navigate to the URL 'chrome://tracing' in a Chrome web browser, 
+  click the 'Load' button and locate the timeline file.
+  '''
+  run_metadata=tf.RunMetadata()
+  options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+  from tensorflow.python.client import timeline
+  trace_file = open('timeline.ctf.json', 'w')
+
+  for i in range(2):
+    fetches = [m_train.train_op, m_train.loss, m_train.accuracy]
+    _, loss, acc = sess.run(fetches, 
+                              options=options, 
+                              run_metadata=run_metadata)
+                              
+    trace = timeline.Timeline(step_stats=run_metadata.step_stats)
+    trace_file.write(trace.generate_chrome_trace_format())
+  trace_file.close()
 
 
 def train(sess, m_train, m_valid):
@@ -88,24 +111,12 @@ def train(sess, m_train, m_valid):
   start_time = time.time()
   orig_begin_time = start_time
 
-  # trace runtime bottleneck
-  # chrome://tracing
-  run_metadata=tf.RunMetadata()
-  options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-  from tensorflow.python.client import timeline
-  trace_file = open('timeline.ctf.json', 'w')
-
+  fetches = [m_train.train_op, m_train.loss, m_train.accuracy]
   while True:
     try:
-      epoch = n // 80
-      fetches = [m_train.train_op, m_train.loss, m_train.accuracy]
-      _, loss, acc = sess.run(fetches, 
-                              options=options, 
-                              run_metadata=run_metadata)
-                              
-      trace = timeline.Timeline(step_stats=run_metadata.step_stats)
-      trace_file.write(trace.generate_chrome_trace_format())
+      _, loss, acc = sess.run(fetches)
 
+      epoch = n // 80
       if n % 80 == 0:
         now = time.time()
         duration = now - start_time
@@ -121,8 +132,6 @@ def train(sess, m_train, m_valid):
       n += 1
     except tf.errors.OutOfRangeError:
       break
-  
-  trace_file.close()
 
   duration = time.time() - orig_begin_time
   duration /= 3600
@@ -164,29 +173,34 @@ def main(_):
     
     init_op = tf.group(tf.global_variables_initializer(),
                         tf.local_variables_initializer())# for file queue
-    # sv finalize the graph
+
     config = tf.ConfigProto()
-    config.gpu_options.per_process_gpu_memory_fraction = 0.9 # 占用GPU90%的显存 
+    # config.gpu_options.per_process_gpu_memory_fraction = 0.9 # 占用GPU90%的显存 
     config.gpu_options.allow_growth = True
-
-    # run_metadata = tf.RunMetadata()
-
     
+    # sv finalize the graph
     with tf.Session(config=config) as sess:
       sess.run(init_op)
       print('='*80)
       sum = 0.
-      for tensor in sess.run(train_data):
-        sum += np.sum(tensor)
+      lexical, rid, sentence, pos1, pos2 = train_data
+      # sentence = sess.run(sentence)
+      # print(sentence[44])
+      for tensor in sess.run([sentence, pos1, pos2, lexical]):
+        tmp = np.sum(tensor)
+        print(tensor.shape, tmp)
+        sum += tmp
       print(sum)
       exit()
 
-      
-      if not FLAGS.test:
-        # m_train.restore(sess)
+      if FLAGS.trace:
+        trace_runtime(sess, m_train)
+      elif FLAGS.test:
+        test(sess, m_valid)
+      else:
         train(sess, m_train, m_valid)
 
-      test(sess, m_valid)
+      
   
           
 if __name__ == '__main__':

@@ -267,6 +267,10 @@ accuracy: 0.7641
 
 best epoch 85, 0.77696
 
+86, 0.777328
+107, 0.777696
+120, 0.777328
+128, 0.777696
 
 $ don't train embedding, 2 pos_embed, loss_l2
 
