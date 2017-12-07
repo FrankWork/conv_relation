@@ -333,9 +333,10 @@ def read_tfrecord_to_batch(filename, epoch, batch_size, shuffle=True):
     dataset = tf.data.TFRecordDataset([filename])
     # Parse the record into tensors
     dataset = dataset.map(_parse_tfexample) 
+    dataset = dataset.repeat(epoch)
     if shuffle:
       dataset = dataset.shuffle(buffer_size=100)
-    dataset = dataset.repeat(epoch)
+    
 
     # [] for no padding, [None] for padding to maximum length
     # n = FLAGS.max_len
@@ -387,7 +388,7 @@ def inputs():
   maybe_write_tfrecord(raw_test_data, test_record)
 
   train_data = read_tfrecord_to_batch(train_record, 
-                              FLAGS.num_epochs, FLAGS.batch_size, shuffle=False)
+                              FLAGS.num_epochs, FLAGS.batch_size, shuffle=True)
   test_data = read_tfrecord_to_batch(test_record, 
                               FLAGS.num_epochs, 2717, shuffle=False)
 

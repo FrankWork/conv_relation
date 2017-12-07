@@ -13,8 +13,8 @@ from reader import base as base_reader
 from models import cnn_model
 from models import mtl_model
 
-tf.set_random_seed(0)
-np.random.seed(0)
+# tf.set_random_seed(0)
+# np.random.seed(0)
 
 tf.app.flags.DEFINE_string("train_file", "data/train.txt", 
                              "original training file")
@@ -93,14 +93,13 @@ def trace_runtime(sess, m_train):
   from tensorflow.python.client import timeline
   trace_file = open('timeline.ctf.json', 'w')
 
-  for i in range(2):
-    fetches = [m_train.train_op, m_train.loss, m_train.accuracy]
-    _, loss, acc = sess.run(fetches, 
-                              options=options, 
-                              run_metadata=run_metadata)
-                              
-    trace = timeline.Timeline(step_stats=run_metadata.step_stats)
-    trace_file.write(trace.generate_chrome_trace_format())
+  fetches = [m_train.train_op, m_train.loss, m_train.accuracy]
+  _, loss, acc = sess.run(fetches, 
+                            options=options, 
+                            run_metadata=run_metadata)
+                            
+  trace = timeline.Timeline(step_stats=run_metadata.step_stats)
+  trace_file.write(trace.generate_chrome_trace_format())
   trace_file.close()
 
 
@@ -112,6 +111,7 @@ def train(sess, m_train, m_valid):
   orig_begin_time = start_time
 
   fetches = [m_train.train_op, m_train.loss, m_train.accuracy]
+
   while True:
     try:
       _, loss, acc = sess.run(fetches)
@@ -182,16 +182,6 @@ def main(_):
     with tf.Session(config=config) as sess:
       sess.run(init_op)
       print('='*80)
-      sum = 0.
-      lexical, rid, sentence, pos1, pos2 = train_data
-      # sentence = sess.run(sentence)
-      # print(sentence[44])
-      for tensor in sess.run([sentence, pos1, pos2, lexical]):
-        tmp = np.sum(tensor)
-        print(tensor.shape, tmp)
-        sum += tmp
-      print(sum)
-      exit()
 
       if FLAGS.trace:
         trace_runtime(sess, m_train)

@@ -22,12 +22,13 @@ class CNNModel(BaseModel):
     # xavier = tf.contrib.layers.xavier_initializer()
     w_trainable = True if FLAGS.word_dim==50 else False
     word_embed = tf.get_variable('word_embed', 
-                                 initializer=word_embed, 
-                                 dtype=tf.float32,
-                                 trainable=w_trainable)
+                      initializer=word_embed,
+                      dtype=tf.float32,
+                      trainable=w_trainable)
     # word_embed = tf.get_variable('word_embed', [len(word_embed), word_dim], dtype=tf.float32)
     pos1_embed = tf.get_variable('pos1_embed', shape=[pos_num, pos_dim])
     pos2_embed = tf.get_variable('pos2_embed', shape=[pos_num, pos_dim])
+
 
     # # embedding lookup
     lexical = tf.nn.embedding_lookup(word_embed, lexical) # batch_size, 6, word_dim
@@ -40,17 +41,20 @@ class CNNModel(BaseModel):
 
     # cnn model
     sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
-    if is_train and keep_prob < 1:
-      sent_pos = tf.nn.dropout(sent_pos, keep_prob)
+    
 
+    if is_train:
+      sent_pos = tf.nn.dropout(sent_pos, keep_prob)
+    
     feature = cnn_forward('cnn', sent_pos, lexical, num_filters)
     feature_size = feature.shape.as_list()[1]
+    self.feature = feature
     
-    if is_train and keep_prob < 1:
+    if is_train:
       feature = tf.nn.dropout(feature, keep_prob)
 
     # Map the features to 19 classes
-    logits, loss_l2 = linear_layer('linear_cnn', feature, feature_size, num_relations)
+    logits, loss_l2 = linear_layer('linear_cnn', feature, feature_size, num_relations, is_regularize=True)
 
     prediction = tf.nn.softmax(logits)
     prediction = tf.argmax(prediction, axis=1)

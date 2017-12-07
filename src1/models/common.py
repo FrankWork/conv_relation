@@ -63,7 +63,7 @@ def cnn_forward(name, sent_pos, lexical, num_filters, mtl=False):
     for filter_size in [3,4,5]:
       with tf.variable_scope('conv-%s' % filter_size):
         conv_weight = tf.get_variable('W1', 
-                              [filter_size, input_dim, 1, num_filters], 
+                              [filter_size, input_dim, 1, num_filters],
                               initializer=tf.truncated_normal_initializer(stddev=0.1))
         conv_bias = tf.get_variable('b1', [num_filters], 
                               initializer=tf.constant_initializer(0.1))
