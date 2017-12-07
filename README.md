@@ -1,3 +1,12 @@
+## TODO
+- load 300d 
+- relabel entity position
+
+- input bottleneck problem
+- op with gpu kernel
+
+- multi task learning
+
 ## Candidate Methods
 
 - large dimention 256
@@ -7,7 +16,6 @@
 - attention
 - adversarial 
 - distant supervision
-
 
 ## Reference
 

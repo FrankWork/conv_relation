@@ -16,68 +16,74 @@ from models import mtl_model
 # tf.set_random_seed(0)
 # np.random.seed(0)
 
-tf.app.flags.DEFINE_string("train_file", "data/train.txt", 
-                             "original training file")
-tf.app.flags.DEFINE_string("test_file", "data/test.txt", 
-                             "original test file")
-tf.app.flags.DEFINE_string("vocab_file", "data/vocab.txt", "vocab file, automantic generated")
-# tf.app.flags.DEFINE_string("vocab_freq_file", "data/vocab_freq.txt", "vocab freqs file, automantic generated")
+flags = tf.app.flags
 
-tf.app.flags.DEFINE_string("word_embed300_orig", 
-                             "data/GoogleNews-vectors-negative300.bin", 
+flags.DEFINE_string("train_file", "data/train.txt", 
+                             "original training file")
+flags.DEFINE_string("test_file", "data/test.txt", 
+                             "original test file")
+
+flags.DEFINE_string("vocab_file", "data/vocab.txt", 
+                              "vocab of train and test data")
+
+flags.DEFINE_string("google_embed300_file", 
+                             "data/embed300.google.npy", 
                              "google news word embeddding")
-tf.app.flags.DEFINE_string("word_embed300_trim", 
+flags.DEFINE_string("google_words_file", 
+                             "data/google_words.lst", 
+                             "google words list")
+flags.DEFINE_string("trimmed_embed300_file", 
                              "data/embed300.trim.npy", 
                              "trimmed google embedding")
 
-tf.app.flags.DEFINE_string("word_embed50_orig", 
-                             "data/embedding/senna/embeddings.txt", 
+flags.DEFINE_string("senna_embed50_file", 
+                             "data/embed50.senna.npy", 
                              "senna words embeddding")
-tf.app.flags.DEFINE_string("senna_words_lst", 
-                             "data/embedding/senna/words.lst", 
+flags.DEFINE_string("senna_words_file", 
+                             "data/senna_words.lst", 
                              "senna words list")
-tf.app.flags.DEFINE_string("word_embed50_trim", 
+flags.DEFINE_string("trimmed_embed50_file", 
                              "data/embed50.trim.npy", 
                              "trimmed senna embedding")
 
-tf.app.flags.DEFINE_string("train_record", "data/train.tfrecord", 
+flags.DEFINE_string("train_record", "data/train.tfrecord", 
                              "training file of TFRecord format")
-tf.app.flags.DEFINE_string("test_record", "data/test.tfrecord", 
+flags.DEFINE_string("test_record", "data/test.tfrecord", 
                              "Test file of TFRecord format")
-tf.app.flags.DEFINE_string("train_mtl_record", "data/train.tfrecord", 
+flags.DEFINE_string("train_mtl_record", "data/train.tfrecord", 
                              "Multi-task learing training file of TFRecord format")
-tf.app.flags.DEFINE_string("test_mtl_record", "data/test.tfrecord", 
+flags.DEFINE_string("test_mtl_record", "data/test.tfrecord", 
                              "Multi-task learing test file of TFRecord format")
 
-tf.app.flags.DEFINE_string("relations_file", "data/relations_new.txt", "relations file")
-tf.app.flags.DEFINE_string("results_file", "data/results.txt", "predicted results file")
-tf.app.flags.DEFINE_string("logdir", "saved_models/", "where to save the model")
+flags.DEFINE_string("relations_file", "data/relations_new.txt", "relations file")
+flags.DEFINE_string("results_file", "data/results.txt", "predicted results file")
+flags.DEFINE_string("logdir", "saved_models/", "where to save the model")
 
-# tf.app.flags.DEFINE_integer("freq_threshold", None, "vocab frequency threshold to keep the word")
-tf.app.flags.DEFINE_integer("max_len", 96, "max length of sentences")
-tf.app.flags.DEFINE_integer("num_relations", 19, "number of relations")
-tf.app.flags.DEFINE_integer("word_dim", 50, "word embedding size")
-tf.app.flags.DEFINE_integer("num_epochs", 200, "number of epochs")
-tf.app.flags.DEFINE_integer("batch_size", 100, "batch size")
+# flags.DEFINE_integer("freq_threshold", None, "vocab frequency threshold to keep the word")
+flags.DEFINE_integer("max_len", 96, "max length of sentences")
+flags.DEFINE_integer("num_relations", 19, "number of relations")
+flags.DEFINE_integer("word_dim", 50, "word embedding size")
+flags.DEFINE_integer("num_epochs", 200, "number of epochs")
+flags.DEFINE_integer("batch_size", 100, "batch size")
 
-tf.app.flags.DEFINE_integer("pos_num", 123, "number of position feature")
-tf.app.flags.DEFINE_integer("pos_dim", 5, "position embedding size")
-# tf.app.flags.DEFINE_integer("filter_size", 3, "cnn number of hidden unit")
-tf.app.flags.DEFINE_integer("num_filters", 100, "cnn number of output unit")
-# tf.app.flags.DEFINE_integer("linear_size", 200, "linear layer number of hidden unit")
-tf.app.flags.DEFINE_float("loss_diff_coef", 0.000001, "coefficient of Orthogonality Constraints")
+flags.DEFINE_integer("pos_num", 123, "number of position feature")
+flags.DEFINE_integer("pos_dim", 5, "position embedding size")
+# flags.DEFINE_integer("filter_size", 3, "cnn number of hidden unit")
+flags.DEFINE_integer("num_filters", 100, "cnn number of output unit")
+# flags.DEFINE_integer("linear_size", 200, "linear layer number of hidden unit")
+flags.DEFINE_float("loss_diff_coef", 0.000001, "coefficient of Orthogonality Constraints")
 
-# tf.app.flags.DEFINE_integer("rnn_size", 100, "hidden unit of rnn")
-# tf.app.flags.DEFINE_integer("rnn_layers", 1, "layers of rnn")
+# flags.DEFINE_integer("rnn_size", 100, "hidden unit of rnn")
+# flags.DEFINE_integer("rnn_layers", 1, "layers of rnn")
 
-# tf.app.flags.DEFINE_integer("decay_steps", 1*80, "learning rate decay steps")
-# tf.app.flags.DEFINE_float("decay_rate", 0.97, "learning rate decay rate")
-tf.app.flags.DEFINE_float("lrn_rate", 1e-3, "learning rate")
-tf.app.flags.DEFINE_float("keep_prob", 0.5, "dropout keep probability")
+# flags.DEFINE_integer("decay_steps", 1*80, "learning rate decay steps")
+# flags.DEFINE_float("decay_rate", 0.97, "learning rate decay rate")
+flags.DEFINE_float("lrn_rate", 1e-3, "learning rate")
+flags.DEFINE_float("keep_prob", 0.5, "dropout keep probability")
 
-tf.app.flags.DEFINE_string("model", "cnn", "cnn or mtl model")
-tf.app.flags.DEFINE_boolean('test', False, 'set True to test')
-tf.app.flags.DEFINE_boolean('trace', False, 'set True to test')
+flags.DEFINE_string("model", "cnn", "cnn or mtl model")
+flags.DEFINE_boolean('test', False, 'set True to test')
+flags.DEFINE_boolean('trace', False, 'set True to test')
 
 FLAGS = tf.app.flags.FLAGS
 

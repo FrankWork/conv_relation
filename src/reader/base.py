@@ -70,105 +70,72 @@ def load_raw_data(filename):
       data.append(example)
   return data
 
-def build_vocab(raw_train_data, raw_test_data):
+def maybe_build_vocab(raw_train_data, raw_test_data, vocab_file):
   '''collect words in sentence'''
-  vocab = set()
-  for example in raw_train_data + raw_test_data:
-    for w in example.sentence:
-        vocab.add(w)
+  if not os.path.exists(vocab_file):
+    vocab = set()
+    for example in raw_train_data + raw_test_data:
+      for w in example.sentence:
+          vocab.add(w)
+
+    with open(vocab_file, 'w') as f:
+      for w in sorted(list(vocab)):
+        f.write('%s\n' % w)
+      f.write('%s\n' % PAD_WORD)
+
+def _load_vocab(vocab_file):
+  # load vocab from file
+  vocab = []
+  with open(vocab_file) as f:
+    for line in f:
+      w = line.strip()
+      vocab.append(w)
+
   return vocab
 
-def gen_google_embeddings(word2id, word_embed_orig, word_embed_trim):
-  '''trim unnecessary words from original pre-trained word embedding
+def _load_embedding(embed_file, words_file):
+  embed = np.load(embed_file)
 
-  Args:
-    word2id: dict, {'I':0, 'you': 1, ...}
-    word_embed_oirg: string, file name of the original pre-trained embedding
-    word_embed_trim: string, file name of the trimmed embedding
-  '''
-  if not os.path.exists(word_embed_trim):
-    import gensim
-    model = gensim.models.KeyedVectors.load_word2vec_format(word_embed_orig, binary=True)
-    
-    shape = (len(word2id), model.vector_size)
-    word_embed = np.zeros(shape, dtype=np.float32)
-    for w, i in word2id.items():
-      if w in model:
-        word_embed[i] = model[w]
-    np.save(word_embed_trim, word_embed)
+  words2id = {}
+  words = _load_vocab(words_file)
+  for id, w in enumerate(words):
+    words2id[w] = id
   
-  word_embed = np.load(word_embed_trim)
-  # FLAGS.word_dim = word_embed.shape[1]
-  zeros = np.zeros((FLAGS.word_dim), dtype=np.float32)
-  n_zero = 0
-  for i in range(word_embed.shape[0]):
-    if np.array_equal(word_embed[i], zeros):
-      word_embed[i] = np.random.normal(0, 0.1,(FLAGS.word_dim))
-      n_zero += 1
-  print("%d zero vectors." % n_zero)
-  return word_embed
+  return embed, words2id
 
-def gen_senna_embeddings(vocab, 
-                        senna_words_embed_file,
-                        senna_words_lst_file,
-                        word_embed_trim_file,
-                        vocab_file):
+def maybe_trim_embeddings(vocab_file, 
+                        pretrain_embed_file,
+                        pretrain_words_file,
+                        trimed_embed_file):
   '''trim unnecessary words from original pre-trained word embedding
 
   Args:
-    vocab: a set of words that appear in the text
-    senna_words_embed_file: file name of the original pre-trained embedding
-    senna_words_lst_file: file name of the senna words list w.r.t the embed
-    word_embed_trim_file: file name of the trimmed embedding
-    vocab_file: filename of the saved vocab
+    vocab_file: a file of tokens in train and test data
+    pretrain_embed_file: file name of the original pre-trained embedding
+    pretrain_words_file: file name of the words list w.r.t the embed
+    trimed_embed_file: file name of the trimmed embedding
   '''
-  if not os.path.exists(word_embed_trim_file):
-    senna_words=open(senna_words_lst_file,"r").readlines()
-    senna_embed=open(senna_words_embed_file,"r").readlines()
-
+  if not os.path.exists(trimed_embed_file):
+    pretrain_embed, pretrain_words2id = _load_embedding(
+                                              pretrain_embed_file,
+                                              pretrain_words_file)
     word_embed=[]
-    vocab2id={}
-    id2vocab = {}
-    id = 0
-    for senna_wid in range(len(senna_words)):
-      word=senna_words[senna_wid].strip()
-      if word in vocab:
-        raw_embed = senna_embed[senna_wid].strip().split()
-        embed = [float(x) for x in raw_embed]
-        vocab2id[word] = id
-        id2vocab[id] = word
-        id += 1
-        word_embed.append(embed)
+    vocab = _load_vocab(vocab_file)
+    for w in vocab:
+      if w in pretrain_words2id:
+        id = pretrain_words2id[w]
+        word_embed.append(pretrain_embed[id])
+      else:
+        vec = np.random.normal(0,0.1,[FLAGS.word_dim])
+        word_embed.append(vec)
+    pad_id = -1
+    word_embed[pad_id] = np.zeros([FLAGS.word_dim])
+
+    np.save(trimed_embed_file, word_embed.astype(np.float32))
     
-    # generate missing embed
-    n_miss=len(vocab)-len(vocab2id)
-    miss_embed=np.random.normal(0,0.1,[n_miss, FLAGS.word_dim])
-    word_embed=np.asarray(word_embed)
-    word_embed=np.vstack((word_embed, miss_embed))
-    words_left = vocab.difference(vocab2id.keys())
-    for w in sorted(list(words_left)):
-      vocab2id[w] = id
-      id2vocab[id] = w
-      id += 1
-
-    # generate embed for PAD_WORD
-    vocab2id[PAD_WORD]=id
-    id2vocab[id] = PAD_WORD
-    word_embed=np.vstack((word_embed,np.zeros([FLAGS.word_dim])))
-
-    np.save(word_embed_trim_file, word_embed.astype(np.float32))
-    with open(vocab_file, 'w') as vocab_f:
-      for id in range(len(vocab2id)):
-        w = id2vocab[id]
-        vocab_f.write('%s\n' % w)
-
-  word_embed = np.load(word_embed_trim_file)
-  vocab2id = {}
-  with open(vocab_file) as vocab_f:
-    for id, line in enumerate(vocab_f):
-      w = line.strip()
-      vocab2id[w] = id
-  return vocab2id, word_embed
+  
+  word_embed, vocab2id = _load_embedding(trimed_embed_file, vocab_file)
+  return word_embed, vocab2id
 
 def map_words_to_id(raw_data, word2id):
   '''inplace convert sentence from a list of words to a list of ids
@@ -358,19 +325,20 @@ def inputs():
   raw_train_data = load_raw_data(FLAGS.train_file)
   raw_test_data = load_raw_data(FLAGS.test_file)
 
-  vocab = build_vocab(raw_train_data, raw_test_data)
+  maybe_build_vocab(raw_train_data, raw_test_data, FLAGS.vocab_file)
 
   if FLAGS.word_dim == 50:
-    vocab2id, word_embed = gen_senna_embeddings(vocab,
-                              FLAGS.word_embed50_orig,
-                              FLAGS.senna_words_lst,
-                              FLAGS.word_embed50_trim,
-                              FLAGS.vocab_file)
+    word_embed, vocab2id = maybe_trim_embeddings(
+                                        FLAGS.vocab_file,
+                                        FLAGS.senna_embed50_file,
+                                        FLAGS.senna_words_file,
+                                        FLAGS.trimmed_embed50_file)
   elif FLAGS.word_dim == 300:
-    word_embed = gen_google_embeddings(vocab2id,
-                              FLAGS.word_embed300_orig, 
-                              FLAGS.word_embed300_trim,
-                              FLAGS.vocab_file)
+    word_embed, vocab2id = maybe_trim_embeddings(
+                                        FLAGS.vocab_file,
+                                        FLAGS.google_embed300_file,
+                                        FLAGS.google_words_file,
+                                        FLAGS.trimmed_embed300_file)
 
   # map words to ids
   map_words_to_id(raw_train_data, vocab2id)
