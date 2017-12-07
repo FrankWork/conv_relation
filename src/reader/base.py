@@ -131,6 +131,7 @@ def maybe_trim_embeddings(vocab_file,
     pad_id = -1
     word_embed[pad_id] = np.zeros([FLAGS.word_dim])
 
+    word_embed = np.asarray(word_embed)
     np.save(trimed_embed_file, word_embed.astype(np.float32))
     
   

@@ -1,5 +1,4 @@
 ## TODO
-- load 300d 
 - relabel entity position
 
 - input bottleneck problem
