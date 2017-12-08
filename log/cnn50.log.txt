@@ -493,6 +493,9 @@ Epoch 200, loss 0.08, acc 1.00 0.7644, time 2.25
 Done training, best_step: 7360, best_acc: 0.7821
 duration: 0.13 hours
 
+Done training, best_step: 8480, best_acc: 0.7766
+
+
 !!!WARNING!!! The proposed file contains 1 label(s) of type 'Entity-Destination(e2,e1)', which is NOT present in the key file.
 
 <<< (2*9+1)-WAY EVALUATION (USING DIRECTIONALITY)>>>:

@@ -18,9 +18,9 @@ from models import mtl_model
 
 flags = tf.app.flags
 
-flags.DEFINE_string("train_file", "data/train.cln", 
+flags.DEFINE_string("train_file", "data/train.txt", 
                              "original training file")
-flags.DEFINE_string("test_file", "data/test.cln", 
+flags.DEFINE_string("test_file", "data/test.txt", 
                              "original test file")
 
 flags.DEFINE_string("vocab_file", "data/vocab.txt", 
