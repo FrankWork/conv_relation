@@ -1,5 +1,14 @@
 $ 3cnn + l2_loss
 acc 0.7946 f1 83.62
+acc 0.8057 f1 84.25%
+
+$ mtl + 3cnn + batch_norm + l2_loss
+best_step: 15280, best_acc: 0.7921 F1 = 83.55%
+
+$ mtl + 3cnn + l2_loss
+best_step: 15040, best_acc: 0.7924 F1 = 83.56%
+
+$ mtl + 3cnn
 
 $ mtl + 3cnn + batch_norm + l2_loss
 
