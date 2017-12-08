@@ -36,7 +36,7 @@ public:
                                                      &output_tensor));
     auto output_flat = output_tensor->flat<float>();
 
-    // Set all but the first element of the output tensor to 0.
+    // copy value from input tensor
     const int N = input.size();
     for (int i = 0; i < N; i++) {
       output_flat(i) = input(i);

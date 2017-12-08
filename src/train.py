@@ -50,9 +50,9 @@ flags.DEFINE_string("train_record", "data/train.tfrecord",
                              "training file of TFRecord format")
 flags.DEFINE_string("test_record", "data/test.tfrecord", 
                              "Test file of TFRecord format")
-flags.DEFINE_string("train_mtl_record", "data/train.tfrecord", 
+flags.DEFINE_string("train_mtl_record", "data/train.mtl.tfrecord", 
                              "Multi-task learing training file of TFRecord format")
-flags.DEFINE_string("test_mtl_record", "data/test.tfrecord", 
+flags.DEFINE_string("test_mtl_record", "data/test.mtl.tfrecord", 
                              "Multi-task learing test file of TFRecord format")
 
 flags.DEFINE_string("relations_file", "data/relations_new.txt", "relations file")

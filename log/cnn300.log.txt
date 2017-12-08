@@ -466,4 +466,5 @@ P =  87.43%	R =  80.31%	F1 =  83.62%
 
 
 
-<<< The official score is (9+1)-way evaluation with directionality taken into account: macro-averaged F1 = 83.62% >>>
+<<< The official score is (9+1)-way evaluation with directionality taken 
+into account: macro-averaged F1 = 83.62% >>>

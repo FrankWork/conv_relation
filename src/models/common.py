@@ -54,8 +54,8 @@ def conv2d(name, input, filter_size, num_filters):
 def cnn_forward(name, sent_pos, lexical, num_filters, mtl=False):
   with tf.variable_scope(name):
     input = tf.expand_dims(sent_pos, axis=-1)
-    if mtl:
-      input = grl_module.grl_op(input)
+    # if mtl:
+    #   input = grl_module.grl_op(input)
     input_dim = input.shape.as_list()[2]
 
     # convolutional layer
@@ -67,16 +67,16 @@ def cnn_forward(name, sent_pos, lexical, num_filters, mtl=False):
                               initializer=tf.truncated_normal_initializer(stddev=0.1))
         conv_bias = tf.get_variable('b1', [num_filters], 
                               initializer=tf.constant_initializer(0.1))
-        if mtl:
-          conv_weight = grl_module.grl_op(conv_weight)
-          conv_bias = grl_module.grl_op(conv_bias)
+        # if mtl:
+        #   conv_weight = grl_module.grl_op(conv_weight)
+        #   conv_bias = grl_module.grl_op(conv_bias)
         conv = tf.nn.conv2d(input,
                             conv_weight,
                             strides=[1, 1, input_dim, 1],
                             padding='SAME')
         # Batch normalization here
-        if mtl:
-          conv = tf.layers.batch_normalization(conv)
+        # if mtl:
+        #   conv = tf.layers.batch_normalization(conv)
         conv = tf.nn.relu(conv + conv_bias) # batch_size, max_len, 1, num_filters
         # max_len = conv.shape.as_list()[1]
         max_len = FLAGS.max_len

@@ -494,7 +494,7 @@ Done training, best_step: 7360, best_acc: 0.7821
 duration: 0.13 hours
 
 Done training, best_step: 8480, best_acc: 0.7766
-
+Done training, best_step: 9920, best_acc: 0.7777
 
 !!!WARNING!!! The proposed file contains 1 label(s) of type 'Entity-Destination(e2,e1)', which is NOT present in the key file.
 
