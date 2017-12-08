@@ -17,43 +17,17 @@ MTL_Label = namedtuple('MTL_Label', 'relation direction')
 
 FLAGS = tf.app.flags.FLAGS # load FLAGS.word_dim
 
-def clean_str(string):
-    """
-    String cleaning.
-    From: https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
-    >>> clean_str("I'll clean this (string)")
-    "i 'll clean this ( string )"
-    """
-    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
-    string = re.sub(r"\'s", " \'s", string)
-    string = re.sub(r"\'ve", " \'ve", string)
-    string = re.sub(r"n\'t", " n\'t", string)
-    string = re.sub(r"\'re", " \'re", string)
-    string = re.sub(r"\'d", " \'d", string)
-    string = re.sub(r"\'ll", " \'ll", string)
-    string = re.sub(r",", " , ", string)
-    string = re.sub(r"!", " ! ", string)
-    string = re.sub(r"\(", " ( ", string)
-    string = re.sub(r"\)", " ) ", string)
-    string = re.sub(r"\?", " ? ", string)
-    string = re.sub(r"\s{2,}", " ", string)
-
-    string = re.sub(r"#", "", string)
-    return string.strip().lower()
-
-# FIXME clean_str changes the entity position
 def load_raw_data(filename):
   '''load raw data from text file, 
-  and convert word to lower case, 
-  and replace digits with 0s;
 
   return: a list of Raw_Example
   '''
   data = []
   with open(filename) as f:
     for line in f:
-      clr_line = clean_str(line)
-      words = clr_line.split(' ')
+      # clr_line = clean_str(line)
+      # words = clr_line.split(' ')
+      words = line.strip().split(' ')
       
       sent = words[5:]
 
@@ -291,7 +265,7 @@ def _parse_tfexample(serialized_example):
     return lexical, rid, direction, sentence, position1, position2
   return lexical, rid, sentence, position1, position2
 
-def read_tfrecord_to_batch(filename, epoch, batch_size, shuffle=True):
+def read_tfrecord_to_batch(filename, epoch, batch_size, pad_value, shuffle=True):
   '''read TFRecord file to get batch tensors for tensorflow models
 
   Returns:
@@ -305,7 +279,6 @@ def read_tfrecord_to_batch(filename, epoch, batch_size, shuffle=True):
     if shuffle:
       dataset = dataset.shuffle(buffer_size=100)
     
-
     # [] for no padding, [None] for padding to maximum length
     # n = FLAGS.max_len
     # if FLAGS.model == 'mtl':
@@ -314,7 +287,9 @@ def read_tfrecord_to_batch(filename, epoch, batch_size, shuffle=True):
     # else:
     #   # lexical, rid, sentence, position1, position2
     #   padded_shapes = ([None,], [], [n], [n], [n])
-    # dataset = dataset.padded_batch(batch_size, padded_shapes)
+    # pad_value = tf.convert_to_tensor(pad_value)
+    # dataset = dataset.padded_batch(batch_size, padded_shapes,
+    #                                padding_values=pad_value)
     dataset = dataset.batch(batch_size)
     
     iterator = dataset.make_one_shot_iterator()
@@ -356,10 +331,13 @@ def inputs():
   maybe_write_tfrecord(raw_train_data, train_record)
   maybe_write_tfrecord(raw_test_data, test_record)
 
+  pad_value = vocab2id[PAD_WORD]
   train_data = read_tfrecord_to_batch(train_record, 
-                              FLAGS.num_epochs, FLAGS.batch_size, shuffle=True)
+                              FLAGS.num_epochs, FLAGS.batch_size, 
+                              pad_value, shuffle=True)
   test_data = read_tfrecord_to_batch(test_record, 
-                              FLAGS.num_epochs, 2717, shuffle=False)
+                              FLAGS.num_epochs, 2717, 
+                              pad_value, shuffle=False)
 
   return train_data, test_data, word_embed
 
