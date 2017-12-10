@@ -4,29 +4,15 @@ from collections import namedtuple
 Raw_Example = namedtuple('Raw_Example', 'label entity1 entity2 sentence')
 PositionPair = namedtuple('PosPair', 'first last')
 
-def clean_str(string):
-    """
-    String cleaning.
-    From: https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
-    >>> clean_str("I'll clean this (string)")
-    "i 'll clean this ( string )"
-    """
-    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
-    string = re.sub(r"\'s", " \'s", string)
-    string = re.sub(r"\'ve", " \'ve", string)
-    string = re.sub(r"n\'t", " n\'t", string)
-    string = re.sub(r"\'re", " \'re", string)
-    string = re.sub(r"\'d", " \'d", string)
-    string = re.sub(r"\'ll", " \'ll", string)
-    string = re.sub(r",", " , ", string)
-    string = re.sub(r"!", " ! ", string)
-    string = re.sub(r"\(", " ( ", string)
-    string = re.sub(r"\)", " ) ", string)
-    string = re.sub(r"\?", " ? ", string)
-    string = re.sub(r"\s{2,}", " ", string)
+pattern = r'\w+|[^\w\s]+' # nltk.tokenize.regexp.WordPunctTokenizer
+regexp = re.compile(pattern)
 
-    string = re.sub(r"#", "", string)
-    return string.strip().lower()
+def wordpunct_tokenizer(line):
+  line = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", line)
+  line = re.sub(r"\s{2,}", " ", line)
+  # line = re.sub(r'\d+', '0', line)
+  # line = re.sub(r'\d', '0', line)
+  return regexp.findall(line)
 
 def find_new_pos(entity, sent):
   ''' find new entity position in cleaned stence
@@ -53,11 +39,16 @@ def clean_data(filename, new_file):
       entity1 = sent[entity1.first: entity1.last+1]
       entity2 = sent[entity2.first: entity2.last+1]
 
-      cln_words = clean_str(line).split()
+      # cln_words = clean_str(line).split()
+      cln_words = wordpunct_tokenizer(line.lower())
       cln_sent = cln_words[5:]
 
       entity1 = find_new_pos(entity1, cln_sent)
       entity2 = find_new_pos(entity2, cln_sent)
+
+      if entity1 is None or entity2 is None:
+        print(line)
+        print(' '.join(cln_sent))
 
       example = Raw_Example(label, entity1, entity2, cln_sent)
       data.append(example)

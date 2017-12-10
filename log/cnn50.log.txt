@@ -203,7 +203,7 @@ duration: 0.13 hours
 
 Done training, best_step: 8480, best_acc: 0.7766
 Done training, best_step: 9920, best_acc: 0.7777
-
+Done training, best_step: 13120, best_acc: 0.7792
 
 <<< (9+1)-WAY EVALUATION TAKING DIRECTIONALITY INTO ACCOUNT -- OFFICIAL >>>:
 

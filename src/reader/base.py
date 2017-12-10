@@ -13,33 +13,6 @@ PositionPair = namedtuple('PosPair', 'first last')
 
 FLAGS = tf.app.flags.FLAGS # load FLAGS.word_dim
 
-def clean_str(string):
-    """
-    String cleaning.
-    From: https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
-    >>> clean_str("I'll clean this (string)")
-    "i 'll clean this ( string )"
-    """
-    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
-    string = re.sub(r"\'s", " \'s", string)
-    string = re.sub(r"\'ve", " \'ve", string)
-    string = re.sub(r"n\'t", " n\'t", string)
-    string = re.sub(r"\'re", " \'re", string)
-    string = re.sub(r"\'d", " \'d", string)
-    string = re.sub(r"\'ll", " \'ll", string)
-    string = re.sub(r",", " , ", string)
-    string = re.sub(r"!", " ! ", string)
-    string = re.sub(r"\(", " ( ", string)
-    string = re.sub(r"\)", " ) ", string)
-    string = re.sub(r"\?", " ? ", string)
-    string = re.sub(r"\s{2,}", " ", string)
-
-    string = re.sub(r"#", "", string)
-    return string.strip().lower()
-
-# NOTE: after the sentence is cleaned, the position of the entity pair is also
-#        changed, but here the position is remained same. Because changing the 
-#        position is not imporving the performance.
 def load_raw_data(filename):
   '''load raw data from text file, 
 
@@ -48,11 +21,12 @@ def load_raw_data(filename):
   data = []
   with open(filename) as f:
     for line in f:
-      clr_line = clean_str(line)
-      words = clr_line.split(' ')
-      # words = line.strip().split(' ')
+      words = line.strip().split(' ')
       
       sent = words[5:]
+      n = len(sent)
+      if FLAGS.max_len < n:
+        FLAGS.max_len = n
 
       label = int(words[0])
 
@@ -61,6 +35,7 @@ def load_raw_data(filename):
 
       example = Raw_Example(label, entity1, entity2, sent)
       data.append(example)
+  print(FLAGS.max_len)
   return data
 
 def maybe_build_vocab(raw_train_data, raw_test_data, vocab_file):
