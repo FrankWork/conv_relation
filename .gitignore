@@ -1,12 +1,4 @@
-data/
 .vscode/
 saved_models/
-nohup.out
-push/
 __pycache__/
-*.so
-*.tfrecords
-tmp*
-cnn/
-push
-run
+
