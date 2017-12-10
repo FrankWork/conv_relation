@@ -1,9 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import with_statement
-
 import os
 import time
 import sys
@@ -11,7 +5,6 @@ import tensorflow as tf
 import numpy as np
 from reader import base as base_reader
 from models import cnn_model
-from models import mtl_model
 
 # tf.set_random_seed(0)
 # np.random.seed(0)
@@ -50,16 +43,12 @@ flags.DEFINE_string("train_record", "data/train.tfrecord",
                              "training file of TFRecord format")
 flags.DEFINE_string("test_record", "data/test.tfrecord", 
                              "Test file of TFRecord format")
-flags.DEFINE_string("train_mtl_record", "data/train.mtl.tfrecord", 
-                             "Multi-task learing training file of TFRecord format")
-flags.DEFINE_string("test_mtl_record", "data/test.mtl.tfrecord", 
-                             "Multi-task learing test file of TFRecord format")
 
-flags.DEFINE_string("relations_file", "data/relations_new.txt", "relations file")
+
+flags.DEFINE_string("relations_file", "data/relations.txt", "relations file")
 flags.DEFINE_string("results_file", "data/results.txt", "predicted results file")
 flags.DEFINE_string("logdir", "saved_models/", "where to save the model")
 
-# flags.DEFINE_integer("freq_threshold", None, "vocab frequency threshold to keep the word")
 flags.DEFINE_integer("max_len", 96, "max length of sentences")
 flags.DEFINE_integer("num_relations", 19, "number of relations")
 flags.DEFINE_integer("word_dim", 50, "word embedding size")
@@ -68,20 +57,11 @@ flags.DEFINE_integer("batch_size", 100, "batch size")
 
 flags.DEFINE_integer("pos_num", 123, "number of position feature")
 flags.DEFINE_integer("pos_dim", 5, "position embedding size")
-# flags.DEFINE_integer("filter_size", 3, "cnn number of hidden unit")
 flags.DEFINE_integer("num_filters", 100, "cnn number of output unit")
-# flags.DEFINE_integer("linear_size", 200, "linear layer number of hidden unit")
-flags.DEFINE_float("loss_diff_coef", 0.000001, "coefficient of Orthogonality Constraints")
 
-# flags.DEFINE_integer("rnn_size", 100, "hidden unit of rnn")
-# flags.DEFINE_integer("rnn_layers", 1, "layers of rnn")
-
-# flags.DEFINE_integer("decay_steps", 1*80, "learning rate decay steps")
-# flags.DEFINE_float("decay_rate", 0.97, "learning rate decay rate")
 flags.DEFINE_float("lrn_rate", 1e-3, "learning rate")
 flags.DEFINE_float("keep_prob", 0.5, "dropout keep probability")
 
-flags.DEFINE_string("model", "cnn", "cnn or mtl model")
 flags.DEFINE_boolean('test', False, 'set True to test')
 flags.DEFINE_boolean('trace', False, 'set True to test')
 
@@ -157,25 +137,12 @@ def test(sess, m_valid):
 def main(_):
   with tf.Graph().as_default():
     train_data, test_data, word_embed = base_reader.inputs()
-
-    # sv = tf.train.Supervisor()
-    # with sv.managed_session() as sess:
-    #   print('='*80)
-    #   for i in range(10):
-    #     arr = sess.run(test_data)
-    #     print(train_data[2].shape, arr[2].shape)
-    #     print(arr[2][0])
-    #   exit()
-
     
-    if FLAGS.model == 'cnn':
-      m_train, m_valid = cnn_model.build_train_valid_model(word_embed, 
-                                                      train_data, test_data)
-    elif FLAGS.model == 'mtl':
-      m_train, m_valid = mtl_model.build_train_valid_model(word_embed, 
+    
+    m_train, m_valid = cnn_model.build_train_valid_model(word_embed, 
                                                       train_data, test_data)
     
-    m_train.set_saver(FLAGS.model)
+    m_train.set_saver('cnn-%d-%d' % (FLAGS.num_epochs, FLAGS.word_dim))
     
     init_op = tf.group(tf.global_variables_initializer(),
                         tf.local_variables_initializer())# for file queue

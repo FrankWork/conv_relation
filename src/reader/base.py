@@ -7,13 +7,9 @@ from collections import namedtuple
 
 
 PAD_WORD = "<pad>"
-# START_WORD = "<start>"
-# END_WORD = "<end>"
-# PAD_ID, START_ID, END_ID = 0,1,2
 
 Raw_Example = namedtuple('Raw_Example', 'label entity1 entity2 sentence')
 PositionPair = namedtuple('PosPair', 'first last')
-MTL_Label = namedtuple('MTL_Label', 'relation direction')
 
 FLAGS = tf.app.flags.FLAGS # load FLAGS.word_dim
 
@@ -40,7 +36,10 @@ def clean_str(string):
 
     string = re.sub(r"#", "", string)
     return string.strip().lower()
-  
+
+# NOTE: after the sentence is cleaned, the position of the entity pair is also
+#        changed, but here the position is remained same. Because changing the 
+#        position is not imporving the performance.
 def load_raw_data(filename):
   '''load raw data from text file, 
 
@@ -56,10 +55,6 @@ def load_raw_data(filename):
       sent = words[5:]
 
       label = int(words[0])
-      if FLAGS.model=='mtl':
-        # label = 0,      1,      2,     3
-        # mtl_  = (0, 0)  (0, 1)  (1, 0) (1, 1)       
-        label = MTL_Label(label//2, label%2)
 
       entity1 = PositionPair(int(words[1]), int(words[2]))
       entity2 = PositionPair(int(words[3]), int(words[4]))
@@ -222,14 +217,8 @@ def build_sequence_example(raw_example):
   lexical = _lexical_feature(raw_example)
   ex.context.feature['lexical'].int64_list.value.extend(lexical)
 
-  if isinstance(raw_example.label, MTL_Label):
-    rid = raw_example.label.relation
-    direction = raw_example.label.direction
-    ex.context.feature['rid'].int64_list.value.append(rid)
-    ex.context.feature['direction'].int64_list.value.append(direction)
-  else:
-    rid = raw_example.label
-    ex.context.feature['rid'].int64_list.value.append(rid)
+  rid = raw_example.label
+  ex.context.feature['rid'].int64_list.value.append(rid)
 
   for word_id in raw_example.sentence:
     word = ex.feature_lists.feature_list['sentence'].feature.add()
@@ -267,8 +256,6 @@ def _parse_tfexample(serialized_example):
   context_features={
                       'lexical'   : tf.FixedLenFeature([6], tf.int64),
                       'rid'    : tf.FixedLenFeature([], tf.int64)}
-  if FLAGS.model == 'mtl':
-    context_features['direction'] = tf.FixedLenFeature([], tf.int64)
   sequence_features={
                       'sentence' : tf.FixedLenSequenceFeature([], tf.int64),
                       'position1'  : tf.FixedLenSequenceFeature([], tf.int64),
@@ -284,9 +271,7 @@ def _parse_tfexample(serialized_example):
 
   lexical = context_dict['lexical']
   rid = context_dict['rid']
-  if FLAGS.model == 'mtl':
-    direction = context_dict['direction']
-    return lexical, rid, direction, sentence, position1, position2
+
   return lexical, rid, sentence, position1, position2
 
 def read_tfrecord_to_batch(filename, epoch, batch_size, pad_value, shuffle=True):
@@ -345,12 +330,8 @@ def inputs():
   map_words_to_id(raw_test_data, vocab2id)
 
   # convert raw data to TFRecord format data, and write to file
-  if FLAGS.model=='mtl':
-    train_record = FLAGS.train_mtl_record
-    test_record = FLAGS.test_mtl_record  
-  else:
-    train_record = FLAGS.train_record
-    test_record = FLAGS.test_record
+  train_record = FLAGS.train_record
+  test_record = FLAGS.test_record
   
   maybe_write_tfrecord(raw_train_data, train_record)
   maybe_write_tfrecord(raw_test_data, test_record)

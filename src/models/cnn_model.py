@@ -1,8 +1,52 @@
 import tensorflow as tf
 from models.base_model import BaseModel
-from .common import *
 
 FLAGS = tf.app.flags.FLAGS
+
+def linear_layer(name, x, in_size, out_size, is_regularize=False):
+  with tf.variable_scope(name):
+    loss_l2 = tf.constant(0, dtype=tf.float32)
+    w = tf.get_variable('linear_W', [in_size, out_size], 
+                      initializer=tf.truncated_normal_initializer(stddev=0.1))
+    b = tf.get_variable('linear_b', [out_size], 
+                      initializer=tf.constant_initializer(0.1))
+    o = tf.nn.xw_plus_b(x, w, b) # batch_size, out_size
+    if is_regularize:
+      loss_l2 += tf.nn.l2_loss(w) + tf.nn.l2_loss(b)
+    return o, loss_l2
+
+def cnn_forward(name, sent_pos, lexical, num_filters):
+  with tf.variable_scope(name):
+    input = tf.expand_dims(sent_pos, axis=-1)
+    input_dim = input.shape.as_list()[2]
+
+    # convolutional layer
+    pool_outputs = []
+    for filter_size in [3,4,5]:
+      with tf.variable_scope('conv-%s' % filter_size):
+        conv_weight = tf.get_variable('W1', 
+                            [filter_size, input_dim, 1, num_filters],
+                            initializer=tf.truncated_normal_initializer(stddev=0.1))
+        conv_bias = tf.get_variable('b1', [num_filters], 
+                              initializer=tf.constant_initializer(0.1))
+        conv = tf.nn.conv2d(input,
+                            conv_weight,
+                            strides=[1, 1, input_dim, 1],
+                            padding='SAME')
+        conv = tf.nn.relu(conv + conv_bias) # batch_size, max_len, 1, num_filters
+        max_len = FLAGS.max_len
+        pool = tf.nn.max_pool(conv, 
+                              ksize= [1, max_len, 1, 1], 
+                              strides=[1, max_len, 1, 1], 
+                              padding='SAME') # batch_size, 1, 1, num_filters
+        pool_outputs.append(pool)
+    pools = tf.reshape(tf.concat(pool_outputs, 3), [-1, 3*num_filters])
+
+    # feature 
+    feature = pools
+    if lexical is not None:
+      feature = tf.concat([lexical, feature], axis=1)
+    return feature
 
 
 class CNNModel(BaseModel):
@@ -19,13 +63,11 @@ class CNNModel(BaseModel):
     lexical, rid, sentence, pos1, pos2 = data
 
     # embedding initialization
-    # xavier = tf.contrib.layers.xavier_initializer()
     w_trainable = True if FLAGS.word_dim==50 else False
     word_embed = tf.get_variable('word_embed', 
                       initializer=word_embed,
                       dtype=tf.float32,
                       trainable=w_trainable)
-    # word_embed = tf.get_variable('word_embed', [len(word_embed), word_dim], dtype=tf.float32)
     pos1_embed = tf.get_variable('pos1_embed', shape=[pos_num, pos_dim])
     pos2_embed = tf.get_variable('pos2_embed', shape=[pos_num, pos_dim])
 
@@ -41,8 +83,6 @@ class CNNModel(BaseModel):
 
     # cnn model
     sent_pos = tf.concat([sentence, pos1, pos2], axis=2)
-    
-
     if is_train:
       sent_pos = tf.nn.dropout(sent_pos, keep_prob)
     
@@ -54,7 +94,9 @@ class CNNModel(BaseModel):
       feature = tf.nn.dropout(feature, keep_prob)
 
     # Map the features to 19 classes
-    logits, loss_l2 = linear_layer('linear_cnn', feature, feature_size, num_relations, is_regularize=True)
+    logits, loss_l2 = linear_layer('linear_cnn', feature, 
+                                  feature_size, num_relations, 
+                                  is_regularize=True)
 
     prediction = tf.nn.softmax(logits)
     prediction = tf.argmax(prediction, axis=1)
