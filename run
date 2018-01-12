@@ -1,8 +1,6 @@
 #! /bin/bash
 
-# rm data/*.tfrecord
-# rm data/*.trim.npy
-# rm data/vocab.txt
+mkdir -p saved_models
 
 CUDA_VISIBLE_DEVICES=2 python3  src/train.py  --num_epochs=200 --word_dim=50
 # python src/train.py  --num_epochs=200 --word_dim=50 --test
